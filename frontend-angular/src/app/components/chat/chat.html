@@ -1,0 +1,144 @@
+<app-header></app-header>
+
+<main class="chat-page">
+  <div class="chat-layout">
+
+    <!-- Lista de especialistas -->
+    <div class="chat-lista">
+      <h4>Mis especialistas</h4>
+      <div class="esp-item"
+           *ngFor="let e of especialistas"
+           [class.seleccionado]="especialistaSeleccionado?.id === e.id"
+           [class.tiene-noLeidos]="tieneNoLeidos(e.id!)"
+           [class.chat-bloqueado]="!tieneChatActivo(e.id!)"
+           (click)="seleccionarEspecialista(e)">
+        <div class="esp-avatar" [class.avatar-noLeidos]="tieneNoLeidos(e.id!)">
+          <i class="fa-solid fa-user-doctor"></i>
+        </div>
+        <div class="esp-info">
+          <strong>{{ e.nombreCompleto }}</strong>
+          <span>{{ e.especialidad }}</span>
+          <small class="chat-estado-label" *ngIf="tieneChatActivo(e.id!)">
+            <i class="fa-solid fa-circle" style="color:#16a34a; font-size:8px"></i> Chat activo
+          </small>
+          <small class="chat-estado-label bloqueado-label" *ngIf="!tieneChatActivo(e.id!)">
+            <i class="fa-solid fa-lock" style="font-size:9px"></i> Chat no disponible
+          </small>
+        </div>
+        <span class="dot-noLeidos" *ngIf="tieneNoLeidos(e.id!)"></span>
+      </div>
+
+      <div class="empty-lista" *ngIf="especialistas.length === 0">
+        <i class="fa-solid fa-comment-slash"></i>
+        <p>No tienes citas agendadas aún.</p>
+      </div>
+    </div>
+
+    <!-- Ventana de chat -->
+    <div class="chat-ventana" *ngIf="especialistaSeleccionado">
+      <div class="chat-header">
+        <i class="fa-solid fa-user-doctor"></i>
+        <div>
+          <strong>{{ especialistaSeleccionado.nombreCompleto }}</strong>
+          <span>{{ especialistaSeleccionado.especialidad }}</span>
+        </div>
+        <span class="badge-chat-activo" *ngIf="chatActivo">
+          <i class="fa-solid fa-circle"></i> Chat activo
+        </span>
+        <span class="badge-chat-bloqueado" *ngIf="!chatActivo">
+          <i class="fa-solid fa-lock"></i> Chat no disponible
+        </span>
+      </div>
+
+      <div class="chat-mensajes">
+
+        <ng-container *ngFor="let m of mensajes">
+
+          <!-- Recordatorio del sistema -->
+          <div class="burbuja-sistema" *ngIf="m.remitenteRol === 'SISTEMA'">
+            <i class="fa-solid fa-bell"></i>
+            <div class="sistema-cuerpo">
+              <span class="sistema-titulo">Recordatorio del sistema</span>
+              <p>{{ limpiarMarca(m.contenido) }}</p>
+              <small>{{ m.fechaEnvio | date:'dd/MM/yyyy HH:mm' }}</small>
+            </div>
+          </div>
+
+          <!-- Burbuja normal -->
+          <div class="burbuja"
+               *ngIf="m.remitenteRol !== 'SISTEMA'"
+               [class.mio]="m.remitenteRol === 'PACIENTE'"
+               [class.suyo]="m.remitenteRol === 'ESPECIALISTA'">
+            <p>{{ m.contenido }}</p>
+            <small>{{ m.fechaEnvio | date:'HH:mm' }}</small>
+          </div>
+
+        </ng-container>
+
+        <p class="empty-msgs" *ngIf="mensajes.length === 0 && chatActivo">
+          Aún no hay mensajes. ¡Saluda al especialista!
+        </p>
+
+        <!-- Chat no disponible + botón cancelar -->
+        <div class="chat-no-disponible" *ngIf="!chatActivo">
+          <i class="fa-solid fa-lock"></i>
+          <p><strong>Chat no disponible</strong></p>
+          <p>El chat solo está activo cuando tienes una cita confirmada pendiente con este especialista. Una vez que el especialista confirme tu reserva, podrás chatear con él.</p>
+
+          <button class="btn-cancelar-cita"
+                  *ngIf="puedeCancelarCitaEspecialista(especialistaSeleccionado.id!)"
+                  (click)="irACancelarCita()">
+            <i class="fa-solid fa-calendar-xmark"></i>
+            Cancelar mi cita
+          </button>
+
+          <p class="cancelacion-vencida"
+             *ngIf="citaVencidaCancelacion(especialistaSeleccionado.id!)">
+            <i class="fa-solid fa-clock"></i>
+            Ya no es posible cancelar (menos de 24h para la cita).
+          </p>
+        </div>
+
+      </div>
+
+      <div class="respuestas-rapidas" *ngIf="chatActivo">
+        <button class="btn-rapido" (click)="enviarRapido('Necesito ayuda con mi cita')">
+          <i class="fa-solid fa-calendar-circle-exclamation"></i>
+          Necesito ayuda con mi cita
+        </button>
+        <button class="btn-rapido" (click)="enviarRapido('Tengo una consulta sobre mi salud')">
+          <i class="fa-solid fa-heart-pulse"></i>
+          Tengo una consulta
+        </button>
+        <button class="btn-rapido" (click)="enviarRapido('¿Puede confirmar mi próxima cita?')">
+          <i class="fa-solid fa-circle-check"></i>
+          Confirmar mi cita
+        </button>
+        <button class="btn-rapido" (click)="enviarRapido('Necesito cancelar mi cita')">
+          <i class="fa-solid fa-calendar-xmark"></i>
+          Cancelar mi cita
+        </button>
+      </div>
+
+      <div class="chat-input" *ngIf="chatActivo">
+        <input [(ngModel)]="nuevoMensaje"
+               placeholder="Escribe tu mensaje..."
+               (keyup.enter)="enviarMensaje()">
+        <button (click)="enviarMensaje()">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+      <div class="chat-input-bloqueado" *ngIf="!chatActivo">
+        <i class="fa-solid fa-lock"></i>
+        <span>Chat no disponible</span>
+      </div>
+    </div>
+
+    <!-- Sin selección -->
+    <div class="chat-vacio" *ngIf="!especialistaSeleccionado && especialistas.length > 0">
+      <i class="fa-solid fa-comments"></i>
+      <p>Selecciona un especialista para iniciar el chat</p>
+    </div>
+
+  </div>
+</main>

@@ -1,0 +1,516 @@
+<div class="admin-container">
+
+  <div class="toast-exito" *ngIf="mensajeExito">
+    <i class="fa-solid fa-circle-check"></i> {{ mensajeExito }}
+  </div>
+
+  <div class="top-bar">
+    <div>
+      <h2>Panel de Administración</h2>
+      <p>Centro de Salud Delicias de Villa</p>
+    </div>
+    <button class="btn-logout" (click)="logout()">
+      <i class="fa-solid fa-right-from-bracket"></i> Salir
+    </button>
+  </div>
+
+  <div class="tabs">
+    <button [class.activo]="tab === 'pendientes'" (click)="cargarTab('pendientes')">
+      <i class="fa-solid fa-clock"></i> Pacientes pendientes
+      <span class="badge" *ngIf="pacientesPendientes.length > 0">{{ pacientesPendientes.length }}</span>
+    </button>
+    <button [class.activo]="tab === 'usuarios'" (click)="cargarTab('usuarios')">
+      <i class="fa-solid fa-users"></i> Todos los usuarios
+    </button>
+    <button [class.activo]="tab === 'especialistas'" (click)="cargarTab('especialistas')">
+      <i class="fa-solid fa-user-doctor"></i> Especialistas
+    </button>
+    <button [class.activo]="tab === 'calendario'" (click)="cargarTab('calendario')">
+      <i class="fa-solid fa-calendar-days"></i> Calendario
+    </button>
+    <button [class.activo]="tab === 'sabiasque'" (click)="cargarTab('sabiasque')">
+      <i class="fa-solid fa-lightbulb"></i> ¿Sabías que...?
+    </button>
+    <button [class.activo]="tab === 'galeria'" (click)="cargarTab('galeria')">
+      <i class="fa-solid fa-images"></i> Galería portada
+    </button>
+  </div>
+
+  <!-- ══════════════════════ PENDIENTES ══════════════════════ -->
+  <div class="panel" *ngIf="tab === 'pendientes'">
+    <div class="panel-header">
+      <h3>Pacientes pendientes de aprobación</h3>
+    </div>
+    <div class="tabla-wrapper">
+      <table class="tabla">
+        <thead><tr>
+          <th>Nombre</th><th>DNI</th><th>Correo</th><th>Teléfono</th><th>SIS</th><th>Acciones</th>
+        </tr></thead>
+        <tbody>
+          <tr *ngFor="let p of pacientesPendientes">
+            <td>{{ p.nombreCompleto }}</td>
+            <td>{{ p.dni }}</td>
+            <td>{{ p.correo }}</td>
+            <td>{{ p.telefono }}</td>
+            <td>
+              <span class="badge-sis" [class.si]="p.afiliadoSis">
+                {{ p.afiliadoSis ? 'Sí' : 'No' }}
+              </span>
+            </td>
+            <td class="acciones">
+              <button class="btn-aprobar" (click)="aprobar(p.id)">
+                <i class="fa-solid fa-check"></i> Aprobar
+              </button>
+              <button class="btn-rechazar" (click)="rechazar(p.id)">
+                <i class="fa-solid fa-xmark"></i> Rechazar
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="pacientesPendientes.length === 0">
+            <td colspan="6" class="empty">No hay pacientes pendientes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ TODOS LOS USUARIOS ══════════════════════ -->
+  <div class="panel" *ngIf="tab === 'usuarios'">
+    <div class="panel-header">
+      <h3>Todos los usuarios</h3>
+      <div class="panel-header-actions">
+        <div class="buscador-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input class="buscador" [(ngModel)]="filtroBusqueda" placeholder="Buscar por nombre, DNI o correo...">
+        </div>
+        <select class="filtro-select" [(ngModel)]="filtroEstado">
+          <option value="">Todos los estados</option>
+          <option value="APROBADO">Aprobados</option>
+          <option value="PENDIENTE">Pendientes</option>
+          <option value="RECHAZADO">Rechazados</option>
+        </select>
+        <button class="btn-excel" (click)="descargarUsuarios()" title="Exportar todos">
+          <i class="fa-solid fa-file-excel"></i> Exportar
+        </button>
+      </div>
+    </div>
+
+    <div class="usuarios-stats">
+      <div class="stat-chip total">
+        <i class="fa-solid fa-users"></i>
+        <span>{{ todosUsuarios.length }} total</span>
+      </div>
+      <div class="stat-chip aprobado">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>{{ contarEstado('APROBADO') }} aprobados</span>
+      </div>
+      <div class="stat-chip pendiente">
+        <i class="fa-solid fa-clock"></i>
+        <span>{{ contarEstado('PENDIENTE') }} pendientes</span>
+      </div>
+      <div class="stat-chip rechazado">
+        <i class="fa-solid fa-circle-xmark"></i>
+        <span>{{ contarEstado('RECHAZADO') }} rechazados</span>
+      </div>
+    </div>
+
+    <!-- ── Administradores ── -->
+    <div class="seccion-usuarios" *ngIf="usuariosFiltradosPorRol('ADMIN').length > 0">
+      <div class="seccion-titulo">
+        <i class="fa-solid fa-shield-halved"></i> Administradores
+      </div>
+      <div class="tabla-wrapper">
+        <table class="tabla tabla-centrada">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>DNI</th>
+              <th>Correo</th>
+              <th>Teléfono</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of usuariosFiltradosPorRol('ADMIN')">
+              <td>{{ u.nombreCompleto }}</td>
+              <td class="mono">{{ u.dni }}</td>
+              <td class="text-muted">{{ u.correo }}</td>
+              <td class="mono">{{ u.telefono || '—' }}</td>
+              <td>
+                <span class="badge-estado" [ngClass]="u.estado?.toLowerCase()">
+                  {{ estadoLabel(u.estado) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Pacientes ── -->
+    <div class="seccion-usuarios" *ngIf="usuariosFiltradosPorRol('PACIENTE').length > 0">
+      <div class="seccion-titulo">
+        <i class="fa-solid fa-heart-pulse"></i> Pacientes
+      </div>
+      <div class="tabla-wrapper">
+        <table class="tabla tabla-centrada">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>DNI</th>
+              <th>Correo</th>
+              <th>Teléfono</th>
+              <th>Estado</th>
+              <th>SIS</th>
+              <th>Historial</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of usuariosFiltradosPorRol('PACIENTE')">
+              <td>{{ u.nombreCompleto }}</td>
+              <td class="mono">{{ u.dni }}</td>
+              <td class="text-muted">{{ u.correo }}</td>
+              <td class="mono">{{ u.telefono || '—' }}</td>
+              <td>
+                <span class="badge-estado" [ngClass]="u.estado?.toLowerCase()">
+                  {{ estadoLabel(u.estado) }}
+                </span>
+              </td>
+              <td>
+                <span class="badge-sis" [class.si]="u.afiliadoSis">
+                  {{ u.afiliadoSis ? 'Sí' : 'No' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn-historial" (click)="descargarHistorial(u)" title="Descargar historial médico">
+                  <i class="fa-solid fa-file-excel"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="empty-seccion" *ngIf="usuariosFiltrados().length === 0">
+      <i class="fa-solid fa-users-slash"></i>
+      <p>No se encontraron usuarios.</p>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════ ESPECIALISTAS ══════════════════════ -->
+  <div class="panel" *ngIf="tab === 'especialistas'">
+    <div class="panel-header">
+      <h3>Especialistas</h3>
+      <div class="panel-header-actions">
+        <button class="btn-excel" (click)="descargarReporteGeneral()">
+          <i class="fa-solid fa-file-excel"></i> Reporte general
+        </button>
+        <button class="btn-nuevo" (click)="creandoEspecialista = !creandoEspecialista; cerrarModal()">
+          <i class="fa-solid fa-plus"></i> Nuevo especialista
+        </button>
+      </div>
+    </div>
+
+    <div class="form-nuevo" *ngIf="creandoEspecialista">
+      <div class="form-grid">
+        <div class="campo">
+          <label>Nombres</label>
+          <input [(ngModel)]="nuevoEsp.nombres" placeholder="Ej: Juan Carlos" maxlength="25">
+        </div>
+        <div class="campo">
+          <label>Apellidos</label>
+          <input [(ngModel)]="nuevoEsp.apellidos" placeholder="Ej: García López" maxlength="25">
+        </div>
+        <div class="campo">
+          <label>Especialidad</label>
+          <input [(ngModel)]="nuevoEsp.especialidad" placeholder="Indique especialidad">
+        </div>
+        <div class="campo">
+          <label>Correo</label>
+          <input type="email" [(ngModel)]="nuevoEsp.correo" placeholder="@postamedicadv.com">
+        </div>
+        <div class="campo">
+          <label>Contraseña</label>
+          <input type="password" [(ngModel)]="nuevoEsp.password" placeholder="••••••••">
+        </div>
+        <div class="campo">
+          <label>DNI</label>
+          <input [(ngModel)]="nuevoEsp.dni" placeholder="8 dígitos" maxlength="8">
+        </div>
+        <div class="campo">
+          <label>Celular</label>
+          <input [(ngModel)]="nuevoEsp.telefono" placeholder="9 dígitos" maxlength="9">
+        </div>
+        <div class="campo campo-foto">
+          <label>Foto del especialista</label>
+          <label class="file-label">
+            <i class="fa-solid fa-image"></i>
+            {{ archivoNuevo ? archivoNuevo.name : 'Seleccionar imagen...' }}
+            <input type="file" accept="image/*" (change)="onFotoNueva($event)" hidden>
+          </label>
+          <img *ngIf="previewNuevo" [src]="previewNuevo" class="foto-preview" alt="preview">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-guardar" (click)="guardarEspecialista()" [disabled]="guardando">
+          <i class="fa-solid fa-floppy-disk"></i> {{ guardando ? 'Guardando...' : 'Guardar' }}
+        </button>
+        <button class="btn-cancelar" (click)="cancelarNuevo()">Cancelar</button>
+      </div>
+    </div>
+
+    <div class="tabla-wrapper">
+      <table class="tabla">
+        <thead><tr>
+          <th>Foto</th><th>Nombre</th><th>Especialidad</th><th>Correo</th>
+          <th>DNI</th><th>Celular</th><th>Estado</th><th>Editar</th>
+        </tr></thead>
+        <tbody>
+          <tr *ngFor="let e of especialistas">
+            <td>
+              <div class="foto-celda">
+                <img *ngIf="e.foto" [src]="fotoUrl(e.foto)" [alt]="e.nombreCompleto" class="foto-tabla">
+                <div *ngIf="!e.foto" class="foto-placeholder">
+                  <i class="fa-solid fa-user-doctor"></i>
+                </div>
+              </div>
+            </td>
+            <td>{{ e.nombreCompleto }}</td>
+            <td>{{ e.especialidad }}</td>
+            <td>{{ e.correo }}</td>
+            <td>{{ e.dni }}</td>
+            <td>{{ e.telefono || '—' }}</td>
+            <td>
+              <button class="toggle-estado"
+                      [class.activo]="e.estado === 'ACTIVO'"
+                      [class.inactivo]="e.estado === 'INACTIVO'"
+                      (click)="toggleEstado(e)"
+                      [title]="e.estado === 'ACTIVO' ? 'Clic para desactivar' : 'Clic para activar'">
+                <span class="toggle-dot"></span>
+                {{ e.estado === 'ACTIVO' ? 'Activo' : 'Inactivo' }}
+              </button>
+            </td>
+            <td>
+              <button class="btn-edit" (click)="abrirModal(e)" title="Editar foto y celular">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="especialistas.length === 0">
+            <td colspan="8" class="empty">No hay especialistas registrados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ CALENDARIO ══════════════════════ -->
+  <div *ngIf="tab === 'calendario'">
+    <app-admin-calendario></app-admin-calendario>
+  </div>
+
+  <!-- ══════════════════════ SABÍAS QUE ══════════════════════ -->
+  <div class="panel" *ngIf="tab === 'sabiasque'">
+    <div class="panel-header">
+      <h3>Gestionar "¿Sabías que...?"</h3>
+      <div class="sabiasque-contador" [class.lleno]="sabiasQueItems.length >= 10">
+        <i class="fa-solid fa-list-check"></i>
+        {{ sabiasQueItems.length }} / 10 datos
+      </div>
+    </div>
+
+    <div class="sabiasque-editor">
+      <div class="sabiasque-info-box">
+        <i class="fa-solid fa-circle-info"></i>
+        <div>
+          <p>Cada dato aparece rotando en el panel del dashboard del paciente.</p>
+          <p>Máximo <strong>10 datos</strong> · Cada uno hasta <strong>80 caracteres</strong> · Solo texto plano.</p>
+        </div>
+      </div>
+
+      <div class="sabiasque-alerta" *ngIf="sabiasQueItems.length >= 10">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Límite máximo alcanzado. Elimina un dato para poder agregar uno nuevo.
+      </div>
+
+      <div class="sabiasque-lista">
+        <div class="sabiasque-item" *ngFor="let item of sabiasQueItems">
+          <span class="sabiasque-num">{{ item.id }}</span>
+          <div class="sabiasque-textarea-wrap">
+            <p class="sabiasque-texto-item">{{ item.contenido }}</p>
+            <small [style.color]="item.contenido.length >= 65 ? '#ef4444' : '#94a3b8'">
+              {{ item.contenido.length }}/80
+            </small>
+          </div>
+          <button class="btn-eliminar-dato" (click)="eliminarDato(item.id)" title="Eliminar">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+
+        <div class="sabiasque-item sabiasque-nuevo" *ngIf="agregandoDato">
+          <span class="sabiasque-num">+</span>
+          <div class="sabiasque-textarea-wrap">
+            <textarea [(ngModel)]="nuevoDato" rows="2" maxlength="80"
+              placeholder="Ej: El corazón late unas 100,000 veces al día..."></textarea>
+            <small [style.color]="nuevoDato.length >= 65 ? '#ef4444' : '#94a3b8'">
+              {{ nuevoDato.length }}/80
+            </small>
+          </div>
+          <button class="btn-cancelar-dato" (click)="agregandoDato = false; nuevoDato = ''">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="sabiasque-empty" *ngIf="sabiasQueItems.length === 0 && !agregandoDato">
+          <i class="fa-solid fa-lightbulb"></i>
+          <p>No hay datos aún. Agrega el primero.</p>
+        </div>
+      </div>
+
+      <div class="sabiasque-actions">
+        <button class="btn-nuevo"
+                (click)="agregandoDato = true"
+                *ngIf="!agregandoDato && sabiasQueItems.length < 10">
+          <i class="fa-solid fa-plus"></i> Agregar dato
+        </button>
+        <button class="btn-guardar"
+                (click)="guardarSabiasQue()"
+                [disabled]="guardandoDatos || !agregandoDato">
+          <i class="fa-solid fa-floppy-disk"></i>
+          {{ guardandoDatos ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ GALERÍA PORTADA ══════════════════════ -->
+  <div class="panel" *ngIf="tab === 'galeria'">
+    <div class="panel-header">
+      <h3>Galería de Portada</h3>
+      <div class="sabiasque-contador" [class.lleno]="galeriaItems.length >= 5">
+        <i class="fa-solid fa-images"></i>
+        {{ galeriaItems.length }} / 5 imágenes
+      </div>
+    </div>
+
+    <div class="sabiasque-editor">
+      <div class="sabiasque-info-box">
+        <i class="fa-solid fa-circle-info"></i>
+        <div>
+          <p>Las imágenes se muestran en el slider de la portada del dashboard.</p>
+          <p>Máximo <strong>5 imágenes</strong> · Formatos: JPG, PNG, WEBP · Tamaño máximo: <strong>2MB</strong>.</p>
+          <p>Arrastra las imágenes para reordenarlas.</p>
+        </div>
+      </div>
+
+      <div class="sabiasque-alerta" *ngIf="galeriaItems.length >= 5">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Límite máximo alcanzado. Elimina una imagen para poder agregar otra.
+      </div>
+
+      <div class="galeria-grid" (dragover)="$event.preventDefault()">
+        <div class="galeria-card"
+             *ngFor="let item of galeriaItems; let i = index"
+             draggable="true"
+             (dragstart)="onDragStart(i)"
+             (dragover)="$event.preventDefault()"
+             (drop)="onDrop(i)"
+             [class.arrastrando]="dragIndex === i">
+          <div class="galeria-card-header">
+            <span class="galeria-orden-badge">
+              <i class="fa-solid fa-grip-vertical"></i> {{ item.orden }}
+            </span>
+            <button class="btn-eliminar-dato" (click)="eliminarSlide(item.id)" title="Eliminar">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+          <img [src]="slideUrl(item.rutaImagen)" [alt]="'Slide ' + item.orden" class="galeria-img">
+        </div>
+
+        <div class="galeria-empty" *ngIf="galeriaItems.length === 0">
+          <i class="fa-solid fa-images"></i>
+          <p>No hay imágenes. Sube la primera.</p>
+        </div>
+      </div>
+
+      <div class="galeria-upload-section" *ngIf="galeriaItems.length < 5">
+        <h4><i class="fa-solid fa-upload"></i> Subir nueva imagen</h4>
+        <div class="form-grid">
+          <div class="campo">
+            <label>Orden de aparición (1 al 5)</label>
+            <input type="number" [(ngModel)]="ordenNuevoSlide" min="1" max="5"
+                   style="max-width:100px; padding:8px; border-radius:8px; border:1px solid #e2e8f0;">
+          </div>
+          <div class="campo campo-foto">
+            <label>Seleccionar imagen</label>
+            <label class="file-label">
+              <i class="fa-solid fa-image"></i>
+              {{ archivoSlide ? archivoSlide.name : 'JPG, PNG o WEBP — máx. 2MB' }}
+              <input type="file" accept="image/jpeg,image/png,image/webp"
+                     (change)="onArchivoSlide($event)" hidden>
+            </label>
+            <img *ngIf="previewSlide" [src]="previewSlide" class="foto-preview" alt="preview"
+                 style="max-height:120px; margin-top:8px; border-radius:8px;">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-guardar" (click)="subirSlide()" [disabled]="subiendoSlide || !archivoSlide">
+            <i class="fa-solid fa-upload"></i>
+            {{ subiendoSlide ? 'Subiendo...' : 'Subir imagen' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════ MODAL DE EDICIÓN ══════════════════════ -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="cerrarModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-pen"></i> Editar especialista</h3>
+      <button class="modal-close" (click)="cerrarModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="espEditando">
+      <p class="modal-nombre">{{ espEditando.nombreCompleto }}</p>
+      <p class="modal-esp">{{ espEditando.especialidad }}</p>
+
+      <div class="modal-foto-wrap">
+        <img *ngIf="previewEditando" [src]="previewEditando" class="modal-foto" alt="foto">
+        <div *ngIf="!previewEditando" class="modal-foto-placeholder">
+          <i class="fa-solid fa-user-doctor"></i>
+        </div>
+      </div>
+
+      <div class="modal-campo">
+        <label>Cambiar foto</label>
+        <label class="file-label">
+          <i class="fa-solid fa-image"></i>
+          {{ archivoEditando ? archivoEditando.name : 'Seleccionar imagen...' }}
+          <input type="file" accept="image/*" (change)="onFotoEditando($event)" hidden>
+        </label>
+      </div>
+
+      <div class="modal-campo">
+        <label>Número de celular</label>
+        <input class="modal-input" [(ngModel)]="telefonoEditando"
+               placeholder="9 dígitos" maxlength="9" type="tel">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-guardar" (click)="guardarEdicion()" [disabled]="guardando">
+        <i class="fa-solid fa-floppy-disk"></i> {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+      <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+    </div>
+
+  </div>
+</div>

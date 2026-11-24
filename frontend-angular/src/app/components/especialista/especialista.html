@@ -1,0 +1,205 @@
+<div class="esp-container">
+
+  <div class="top-bar">
+    <div class="brand">
+      <i class="fa-solid fa-hospital"></i>
+      <div>
+        <strong>{{ especialista?.nombreCompleto }}</strong>
+        <span>{{ especialista?.especialidad }}</span>
+      </div>
+    </div>
+    <button class="btn-logout" (click)="logout()">
+      <i class="fa-solid fa-right-from-bracket"></i> Salir
+    </button>
+  </div>
+
+  <div class="tabs">
+    <button [class.activo]="tab === 'calendario'" (click)="tab = 'calendario'">
+      <i class="fa-solid fa-list-ul"></i> Mis citas
+    </button>
+    <button [class.activo]="tab === 'calendario-semana'" (click)="tab = 'calendario-semana'">
+      <i class="fa-solid fa-calendar-week"></i> Calendario semanal
+    </button>
+    <button [class.activo]="tab === 'chat'" (click)="tab = 'chat'">
+      <i class="fa-solid fa-comments"></i> Mensajes
+    </button>
+  </div>
+
+  <!-- LISTA DE CITAS -->
+  <div class="panel" *ngIf="tab === 'calendario'">
+    <div class="panel-header">
+      <h3>Mis citas</h3>
+      <div class="header-leyenda">
+        <span class="ley-item por-confirmar"><i class="fa-solid fa-circle-dot"></i> Por confirmar</span>
+        <span class="ley-item confirmada"><i class="fa-solid fa-circle-check"></i> Confirmada</span>
+        <span class="ley-item atendida"><i class="fa-solid fa-circle-check"></i> Atendida</span>
+      </div>
+    </div>
+    <div class="tabla-wrapper">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Paciente</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+            <!-- Columna Editar: solo aparece si hay citas SIN_RESPUESTA -->
+            <th *ngIf="mostrarColumnaEditar()" class="th-editar">Editar registro</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of citas" [class.fila-por-confirmar]="c.estado === 'POR_CONFIRMAR'">
+            <td>{{ c.fecha | date:'dd/MM/yyyy' }}</td>
+            <td>{{ c.hora?.substring(0,5) }}</td>
+            <td>{{ getNombrePaciente(c.pacienteId) }}</td>
+            <td>
+              <span class="estado-badge" [ngClass]="getEstadoClase(c.estado!)">
+                {{ getEstadoLabel(c.estado) }}
+              </span>
+            </td>
+
+            <!-- ══ COLUMNA ACCIONES ══════════════════════════════ -->
+
+            <!-- POR_CONFIRMAR: Aceptar o Rechazar -->
+            <td class="acciones" *ngIf="c.estado === 'POR_CONFIRMAR'">
+              <button class="btn-aceptar" (click)="aceptarCita(c.id!)">
+                <i class="fa-solid fa-check"></i> Aceptar
+              </button>
+              <button class="btn-rechazar" (click)="abrirRechazar(c)">
+                <i class="fa-solid fa-xmark"></i> Rechazar
+              </button>
+            </td>
+
+            <!-- PROGRAMADA: botones SOLO activos durante la ventana horaria -->
+            <td class="acciones" *ngIf="c.estado === 'PROGRAMADA'">
+              <ng-container *ngIf="estaEnVentana(c); else fueraVentana">
+                <button class="btn-atendida" (click)="marcarAtendida(c.id!)">
+                  <i class="fa-solid fa-circle-check"></i> Atendida
+                </button>
+                <button class="btn-no-asistio" (click)="marcarNoAsistida(c.id!)">
+                  <i class="fa-solid fa-circle-xmark"></i> No asistió
+                </button>
+              </ng-container>
+              <ng-template #fueraVentana>
+                <span class="fuera-ventana" title="Disponible únicamente durante el horario de la cita">
+                  <i class="fa-solid fa-clock"></i> Disponible en su horario
+                </span>
+              </ng-template>
+            </td>
+
+            <!-- ATENDIDA: ya marcó, se muestra fijo, no se puede cambiar -->
+            <td class="acciones" *ngIf="c.estado === 'ATENDIDA'">
+              <span class="accion-fija atendida-fija">
+                <i class="fa-solid fa-circle-check"></i> Marcó: Atendida
+              </span>
+            </td>
+
+            <!-- NO_ASISTIDA: ya marcó, se muestra fijo, no se puede cambiar -->
+            <td class="acciones" *ngIf="c.estado === 'NO_ASISTIDA'">
+              <span class="accion-fija no-asistida-fija">
+                <i class="fa-solid fa-circle-xmark"></i> Marcó: No asistió
+              </span>
+            </td>
+
+            <!-- SIN_RESPUESTA: venció sin marcar, muestra aviso de color -->
+            <td class="acciones" *ngIf="c.estado === 'SIN_RESPUESTA'">
+              <span class="accion-sin-respuesta">
+                <i class="fa-solid fa-triangle-exclamation"></i> Sin registro
+              </span>
+            </td>
+
+            <!-- CANCELADA: sin acciones -->
+            <td class="acciones" *ngIf="c.estado === 'CANCELADA'">—</td>
+
+            <!-- ══ COLUMNA EDITAR (solo si hay SIN_RESPUESTA en lista) ══ -->
+            <td class="td-editar" *ngIf="mostrarColumnaEditar()">
+              <!-- Solo la fila SIN_RESPUESTA muestra los botones de edición -->
+              <ng-container *ngIf="c.estado === 'SIN_RESPUESTA'">
+                <button class="btn-atendida btn-edit" (click)="marcarAtendida(c.id!)">
+                  <i class="fa-solid fa-circle-check"></i> Asistió
+                </button>
+                <button class="btn-no-asistio btn-edit" (click)="marcarNoAsistida(c.id!)">
+                  <i class="fa-solid fa-circle-xmark"></i> No asistió
+                </button>
+              </ng-container>
+              <!-- Las demás filas dejan la celda vacía -->
+              <span *ngIf="c.estado !== 'SIN_RESPUESTA'" class="td-editar-vacio">—</span>
+            </td>
+
+          </tr>
+          <tr *ngIf="citas.length === 0">
+            <td colspan="6" class="empty">No tienes citas registradas.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CALENDARIO SEMANAL -->
+  <div class="panel-calendario" *ngIf="tab === 'calendario-semana'">
+    <app-especialista-calendario></app-especialista-calendario>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-panel" *ngIf="tab === 'chat'">
+    <div class="chat-lista">
+      <h4>Pacientes</h4>
+      <div class="paciente-item"
+           *ngFor="let p of pacientesConCita"
+           [class.seleccionado]="pacienteSeleccionado?.id === p.id"
+           (click)="seleccionarPaciente(p)">
+        <i class="fa-solid fa-user-circle"></i>
+        {{ p.nombreCompleto }}
+      </div>
+      <p class="empty-chat" *ngIf="pacientesConCita.length === 0">Sin pacientes con cita</p>
+    </div>
+
+    <div class="chat-ventana" *ngIf="pacienteSeleccionado">
+      <div class="chat-header">
+        <i class="fa-solid fa-user-circle"></i>
+        {{ pacienteSeleccionado.nombreCompleto }}
+      </div>
+      <div class="chat-mensajes">
+        <div class="burbuja" *ngFor="let m of mensajes"
+             [class.mio]="m.remitenteRol === 'ESPECIALISTA'"
+             [class.suyo]="m.remitenteRol === 'PACIENTE'">
+          <p>{{ m.contenido }}</p>
+          <small>{{ m.fechaEnvio | date:'HH:mm' }}</small>
+        </div>
+        <p class="empty-msgs" *ngIf="mensajes.length === 0">Sin mensajes aún</p>
+      </div>
+      <div class="chat-input">
+        <input [(ngModel)]="nuevoMensaje" placeholder="Escribe un mensaje..."
+               (keyup.enter)="enviarMensaje()">
+        <button (click)="enviarMensaje()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+    <div class="chat-vacio" *ngIf="!pacienteSeleccionado">
+      <i class="fa-solid fa-comments"></i>
+      <p>Selecciona un paciente para chatear</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL RECHAZAR -->
+<div class="modal-overlay" *ngIf="citaArechazar" (click)="citaArechazar = null">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-head rechazo">
+      <i class="fa-solid fa-circle-xmark"></i>
+      <h3>Rechazar cita</h3>
+    </div>
+    <p>Escribe el motivo para que el paciente pueda reagendar:</p>
+    <textarea [(ngModel)]="mensajeRechazo" rows="4"
+              placeholder="Ej: No estaré disponible ese día, por favor seleccione otra fecha..."></textarea>
+    <div class="modal-actions">
+      <button class="btn-confirmar-rechazo" (click)="confirmarRechazo()"
+              [disabled]="!mensajeRechazo.trim()">
+        <i class="fa-solid fa-xmark"></i> Confirmar rechazo
+      </button>
+      <button class="btn-cerrar" (click)="citaArechazar = null">Cancelar</button>
+    </div>
+  </div>
+</div>

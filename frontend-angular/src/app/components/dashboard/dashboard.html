@@ -1,0 +1,97 @@
+<app-header></app-header>
+
+<main class="dashboard-page">
+
+  <!-- BANNER + SABÍAS QUE en fila 70/30 -->
+  <div class="hero-wrapper">
+
+    <section class="hero-section">
+      <div class="slideshow">
+        <img *ngFor="let slide of slides; let i = index"
+             [src]="slideUrl(slide)"
+             [class.activo]="i === slideActual"
+             class="slide-img" />
+        <div class="slide-dots">
+          <span *ngFor="let slide of slides; let i = index"
+                [class.activo]="i === slideActual"
+                (click)="irASlide(i)"></span>
+        </div>
+        <div *ngIf="slides.length === 0" class="slide-placeholder">
+          <i class="fa-solid fa-image"></i>
+          <p>Sin imágenes de portada</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sabias-bar">
+      <div class="sabias-body">
+        <p class="sabias-texto" [class.animando]="animandoTexto">{{ sabiaQueActual }}</p>
+      </div>
+      <div class="sabias-puntos">
+        <span *ngFor="let d of sabiasQue; let i = index"
+              [class.activo]="i === sabiaQueIndex"
+              (click)="irASabiaQue(i)"></span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ESPECIALISTAS -->
+  <section class="especialistas-section">
+    <div class="section-header">
+      <h2>Nuestros Especialistas</h2>
+      <p>Selecciona un especialista para agendar tu cita</p>
+    </div>
+
+    <div class="loading" *ngIf="cargando">
+      <i class="fa-solid fa-spinner fa-spin"></i> Cargando...
+    </div>
+
+    <div class="especialistas-grid" *ngIf="!cargando">
+      <div class="especialista-card" *ngFor="let e of especialistas">
+        <div class="card-foto">
+          <img *ngIf="e.foto" [src]="fotoUrl(e.foto)" [alt]="e.nombreCompleto" class="foto-esp">
+          <div *ngIf="!e.foto" class="foto-esp-placeholder">
+            <i class="fa-solid fa-user-doctor"></i>
+          </div>
+        </div>
+        <h3>{{ e.nombreCompleto }}</h3>
+        <p class="especialidad">{{ e.especialidad }}</p>
+        <button class="btn-agendar" (click)="agendarCita(e.id!)">
+          <i class="fa-solid fa-calendar-plus"></i> Agendar cita
+        </button>
+      </div>
+
+      <div class="empty-state" *ngIf="especialistas.length === 0">
+        <i class="fa-solid fa-user-doctor"></i>
+        <p>No hay especialistas disponibles por el momento.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÓMO FUNCIONA -->
+  <section class="como-funciona">
+    <h2>¿Cómo agendar tu cita?</h2>
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso-numero">1</div>
+        <i class="fa-solid fa-user-plus"></i>
+        <h3>Regístrate</h3>
+        <p>Crea tu cuenta y espera la aprobación del administrador</p>
+      </div>
+      <div class="paso">
+        <div class="paso-numero">2</div>
+        <i class="fa-solid fa-user-doctor"></i>
+        <h3>Elige tu especialista</h3>
+        <p>Selecciona el especialista que necesitas</p>
+      </div>
+      <div class="paso">
+        <div class="paso-numero">3</div>
+        <i class="fa-solid fa-calendar-check"></i>
+        <h3>Confirma tu cita</h3>
+        <p>Escoge fecha y hora disponible y listo</p>
+      </div>
+    </div>
+  </section>
+
+</main>

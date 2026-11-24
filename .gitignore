@@ -1,0 +1,11 @@
+# Backend (Spring)
+backend-spring/target/
+backend-spring/.mvn/wrapper/maven-wrapper.jar
+
+# Frontend (Angular)
+frontend-angular/node_modules/
+frontend-angular/dist/
+
+# Mac y VS Code
+.DS_Store
+.vscode/

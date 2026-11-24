@@ -1,0 +1,34 @@
+@if (inactividad.mostrarAviso) {
+  <div class="overlay">
+    <div class="modal">
+
+      <div class="icono-wrap">
+        <div class="pulso"></div>
+        <i class="fa-solid fa-clock icono"></i>
+      </div>
+
+      <h2>¿Sigues ahí?</h2>
+      <p>Tu sesión se cerrará automáticamente por inactividad en:</p>
+
+      <div class="cuenta">
+        <svg class="anillo" viewBox="0 0 80 80">
+          <circle class="fondo" cx="40" cy="40" r="34"/>
+          <circle
+            class="progreso"
+            cx="40" cy="40" r="34"
+            [style.stroke-dashoffset]="213.6 - (213.6 * inactividad.segundosRestantes / 30)"
+          />
+        </svg>
+        <span class="numero">{{ inactividad.segundosRestantes }}</span>
+      </div>
+
+      <p class="sub">Cualquier movimiento del ratón o teclado reiniciará la sesión.</p>
+
+      <button class="btn-continuar" (click)="continuar()">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+        Continuar sesión
+      </button>
+
+    </div>
+  </div>
+}

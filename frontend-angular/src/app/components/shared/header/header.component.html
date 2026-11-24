@@ -1,0 +1,85 @@
+<header class="main-header">
+  <div class="header-inner">
+
+    <!-- BRAND -->
+    <div class="brand" (click)="irADashboard()">
+      <i class="fa-solid fa-hospital"></i>
+      <span>
+        <em>Posta Médica</em>
+        <strong>Delicias de Villa</strong>
+      </span>
+    </div>
+
+    <!-- NAV -->
+    <nav class="nav-links" *ngIf="rol === 'PACIENTE'">
+      <div class="nav-col">
+        <a (click)="irADashboard()">Inicio</a>
+        <a (click)="irAMisCitas()">Mis reservas</a>
+      </div>
+      <div class="nav-col">
+        <a (click)="irAChat()" class="nav-mensajes">
+          Mensajes
+          <!-- ✅ Circulito rojo con contador -->
+          <span class="badge-mensajes" [class.tiene-mensajes]="mensajesNoLeidos > 0">
+            {{ mensajesNoLeidos }}
+          </span>
+        </a>
+        <a (click)="irAEspecialistas()">Especialistas</a>
+      </div>
+    </nav>
+
+    <!-- USER AREA -->
+    <div class="user-area">
+
+      <ng-container *ngIf="rol === 'PACIENTE'">
+        <div class="contador" [ngClass]="'contador-' + claseSemana">
+          <div class="contador-icono">
+            <i class="fa-solid fa-calendar-week"></i>
+          </div>
+          <div class="contador-body">
+            <div class="contador-top">
+              <span class="num-usado">{{ citasSemana }}</span>
+              <span class="num-sep">/</span>
+              <span class="num-max">{{ maxSemana }}</span>
+            </div>
+            <span class="contador-lbl">Esta semana</span>
+          </div>
+          <div class="barra-wrap">
+            <div class="barra-fill" [style.width.%]="(citasSemana / maxSemana) * 100"></div>
+          </div>
+        </div>
+
+        <div class="contador" [ngClass]="'contador-' + claseMes">
+          <div class="contador-icono">
+            <i class="fa-solid fa-calendar-days"></i>
+          </div>
+          <div class="contador-body">
+            <div class="contador-top">
+              <span class="num-usado">{{ citasMes }}</span>
+              <span class="num-sep">/</span>
+              <span class="num-max">{{ maxMes }}</span>
+            </div>
+            <span class="contador-lbl">{{ nombreMesActual }}</span>
+          </div>
+          <div class="barra-wrap">
+            <div class="barra-fill" [style.width.%]="(citasMes / maxMes) * 100"></div>
+          </div>
+        </div>
+      </ng-container>
+
+      <span class="user-name" *ngIf="usuario">
+        <i class="fa-solid fa-user-circle"></i>
+        <span class="user-texto">
+          <em>{{ lineaArriba }}</em>
+          <strong>{{ lineaAbajo }}</strong>
+        </span>
+      </span>
+
+      <button class="btn-logout" (click)="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i> Salir
+      </button>
+
+    </div>
+  </div>
+
+</header>

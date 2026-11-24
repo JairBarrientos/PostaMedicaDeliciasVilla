@@ -1,0 +1,324 @@
+.nueva-cita-page {
+  min-height: 100vh;
+  background: #f1f5f9;
+  padding: 32px 24px;
+  font-size: 18px !important;
+}
+
+.nueva-cita-page * { box-sizing: border-box; }
+
+.cita-layout {
+  display: flex;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+
+.cita-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  font-size: 18px;
+}
+
+.cita-right {
+  width: 300px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 120px;
+}
+
+.btn-back {
+  background: none; border: none; color: #1a56db;
+  font-size: 16px !important; font-weight: 600;
+  cursor: pointer; padding: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: color 0.2s; font-family: inherit;
+}
+.btn-back:hover { color: #1447b8; }
+
+.cita-left h2 {
+  font-size: 26px !important; font-weight: 800;
+  color: #0f172a; display: flex; align-items: center; gap: 10px; margin: 0;
+}
+.cita-left h2 i { color: #1a56db; }
+
+/* ✅ AVISO LÍMITE */
+.aviso-limite {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 16px 20px;
+}
+.aviso-limite > i {
+  font-size: 22px;
+  color: #1a56db;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.aviso-limite strong {
+  display: block;
+  font-size: 15px !important;
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 4px;
+}
+.aviso-limite p {
+  font-size: 14px !important;
+  color: #3b82f6;
+  margin: 0;
+  line-height: 1.5;
+}
+.aviso-limite p strong { display: inline; font-size: 14px !important; color: #1e40af; }
+
+/* LEYENDA */
+.leyenda {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  background: #fff; padding: 14px 18px;
+  border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.ley-item {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 14px !important; color: #475569; font-weight: 500;
+}
+.dot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+.dot.verde   { background: #d1e7dd; border: 1.5px solid #0a3622; }
+.dot.rojo    { background: #fee2e2; border: 1.5px solid #991b1b; }
+.dot.naranja { background: #fef3c7; border: 1.5px solid #92400e; }
+.dot.gris    { background: #e2e8f0; border: 1.5px solid #64748b; }
+.dot.azul    { background: #1a56db; border: 1.5px solid #1447b8; }
+
+/* CALENDARIO */
+.calendario {
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 22px;
+}
+.cal-nav {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 20px;
+}
+.cal-nav span { font-size: 17px !important; font-weight: 700; color: #0f172a; }
+.cal-nav button {
+  background: #eff6ff; border: none; border-radius: 10px;
+  width: 40px; height: 40px; cursor: pointer; color: #1a56db;
+  font-size: 16px !important; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.cal-nav button:hover { background: #dbeafe; transform: scale(1.05); }
+
+.cal-semana { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+
+.cal-dia {
+  border-radius: 14px; padding: 14px 6px; text-align: center;
+  cursor: pointer; transition: all 0.15s; border: 2px solid transparent;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.dia-nombre { font-size: 13px !important; font-weight: 700; text-transform: uppercase; }
+.dia-numero { font-size: 28px !important; font-weight: 800; line-height: 1.2; }
+.dia-mes    { font-size: 13px !important; font-weight: 500; }
+.dia-estado { font-size: 11px !important; font-weight: 700; margin-top: 2px; text-transform: uppercase; }
+
+.cal-dia.disponible { background: #dcfce7; color: #166534; }
+.cal-dia.disponible .dia-nombre,
+.cal-dia.disponible .dia-mes { color: #166534; }
+.cal-dia.disponible:hover {
+  border-color: #16a34a; transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(22,163,74,0.2);
+}
+.cal-dia.domingo { background: #fee2e2; color: #991b1b; cursor: not-allowed; }
+.cal-dia.domingo .dia-nombre, .cal-dia.domingo .dia-mes, .cal-dia.domingo .dia-estado { color: #991b1b; }
+.cal-dia.feriado { background: #fef3c7; color: #92400e; cursor: not-allowed; }
+.cal-dia.feriado .dia-nombre, .cal-dia.feriado .dia-mes, .cal-dia.feriado .dia-estado { color: #92400e; }
+.cal-dia.bloqueado { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+.cal-dia.bloqueado .dia-nombre, .cal-dia.bloqueado .dia-mes, .cal-dia.bloqueado .dia-estado { color: #94a3b8; }
+.cal-dia.pasado { background: #f8fafc; color: #cbd5e1; cursor: not-allowed; }
+.cal-dia.seleccionado {
+  background: #1a56db !important; border-color: #1447b8 !important;
+  color: #fff !important; box-shadow: 0 6px 16px rgba(26,86,219,0.35); transform: translateY(-3px);
+}
+.cal-dia.seleccionado .dia-nombre, .cal-dia.seleccionado .dia-mes,
+.cal-dia.seleccionado .dia-numero, .cal-dia.seleccionado .dia-estado { color: #fff !important; }
+
+/* DOMINGO */
+.horarios-domingo {
+  background: #fff; border-radius: 16px; padding: 48px 28px;
+  text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.07); border: 2px solid #fef3c7;
+}
+.horarios-domingo i { font-size: 48px; color: #f59e0b; margin-bottom: 16px; display: block; }
+.domingo-titulo { font-size: 20px !important; font-weight: 800; color: #92400e; margin: 0 0 8px; }
+.domingo-sub { font-size: 16px !important; color: #b45309; margin: 0; line-height: 1.6; }
+
+/* HORARIOS */
+.horarios {
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 22px;
+}
+.horarios h3 {
+  font-size: 18px !important; font-weight: 700; color: #0f172a;
+  margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+}
+.horarios h3 i { color: #1a56db; }
+.fecha-sel { font-size: 16px !important; color: #1a56db; margin-bottom: 16px; font-weight: 600; }
+
+.horarios-grilla { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+
+.slot {
+  padding: 12px 0; border: 2px solid #e2e8f0; border-radius: 10px;
+  background: #fff; font-size: 16px !important; font-weight: 700;
+  color: #475569; cursor: pointer; transition: all 0.15s; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; font-family: inherit;
+}
+.slot:hover:not(:disabled) {
+  border-color: #1a56db; color: #1a56db; background: #eff6ff; transform: translateY(-2px);
+}
+.slot.seleccionado {
+  background: #1a56db; border-color: #1447b8; color: #fff;
+  box-shadow: 0 4px 12px rgba(26,86,219,0.3);
+}
+.slot.ocupado { background: #fee2e2; border-color: #fca5a5; color: #991b1b; cursor: not-allowed; }
+
+/* ✅ Hora pasada — gris igual que no disponible */
+.slot.hora-pasada {
+  background: #f1f5f9; border-color: #e2e8f0; color: #94a3b8; cursor: not-allowed;
+}
+
+.slot.bloqueado-rango {
+  background: #fef3c7; border-color: #fcd34d; color: #92400e; cursor: not-allowed; opacity: 0.85;
+}
+.slot-tag { font-size: 10px !important; font-weight: 700; text-transform: uppercase; }
+.slot-tag.blq { color: #b45309; display: flex; align-items: center; gap: 3px; }
+
+.horarios-placeholder {
+  background: #fff; border-radius: 16px; padding: 48px 20px;
+  text-align: center; color: #94a3b8;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07); border: 2px dashed #e2e8f0;
+}
+.horarios-placeholder i { font-size: 40px; margin-bottom: 14px; display: block; color: #cbd5e1; }
+.horarios-placeholder p { font-size: 16px !important; margin: 0; }
+
+/* BOTÓN CONFIRMAR */
+.btn-confirmar {
+  width: 100%; padding: 18px; background: #1a56db; color: #fff;
+  border: none; border-radius: 14px; font-size: 18px !important; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 10px; transition: all 0.2s; font-family: inherit;
+  box-shadow: 0 4px 16px rgba(26,86,219,0.3);
+}
+.btn-confirmar:hover:not(:disabled) {
+  background: #1447b8; transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(26,86,219,0.4);
+}
+.btn-confirmar:disabled { background: #93c5fd; cursor: not-allowed; box-shadow: none; }
+
+.msg-notif {
+  padding: 16px 18px; border-radius: 12px; font-size: 16px !important;
+  font-weight: 600; display: flex; align-items: center; gap: 8px;
+}
+.msg-notif.exito { background: #dcfce7; color: #166534; }
+.msg-notif.error { background: #fee2e2; color: #991b1b; }
+
+/* OVERLAY */
+.overlay-cargando {
+  position: fixed; inset: 0; background: rgba(15,23,42,0.6);
+  z-index: 9999; display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.spinner-box {
+  background: #fff; border-radius: 20px; padding: 40px 48px;
+  text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.spinner {
+  width: 56px; height: 56px; border: 5px solid #dbeafe;
+  border-top-color: #1a56db; border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+@keyframes girar { to { transform: rotate(360deg); } }
+.spinner-box p { font-size: 18px !important; font-weight: 700; color: #0f172a; margin: 0; }
+.spinner-box span { font-size: 14px !important; color: #64748b; }
+
+/* CV ESPECIALISTA */
+.cv-avatar {
+  width: 110px; height: 110px; border-radius: 50%; overflow: hidden;
+  border: 4px solid #dbeafe; box-shadow: 0 4px 16px rgba(26,86,219,0.15); flex-shrink: 0;
+}
+.cv-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.cv-avatar-placeholder {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+  display: flex; align-items: center; justify-content: center;
+}
+.cv-avatar-placeholder i { font-size: 44px; color: #1a56db; }
+.cv-nombre { font-size: 17px !important; font-weight: 800; color: #0f172a; text-align: center; margin: 0; line-height: 1.3; }
+.cv-especialidad {
+  font-size: 14px !important; font-weight: 600; color: #1a56db;
+  display: flex; align-items: center; gap: 6px;
+  background: #eff6ff; padding: 6px 16px; border-radius: 20px;
+}
+.cv-divider { width: 100%; height: 1px; background: #f1f5f9; }
+.cv-section { width: 100%; }
+.cv-section h4 {
+  font-size: 13px !important; font-weight: 700; color: #64748b;
+  text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.cv-section h4 i { color: #1a56db; }
+.cv-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px !important; color: #475569; padding: 6px 0;
+  border-bottom: 1px solid #f8fafc; word-break: break-all;
+}
+.cv-item i { color: #1a56db; font-size: 13px; flex-shrink: 0; }
+.cv-horario-item {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px !important; padding: 6px 0; border-bottom: 1px solid #f8fafc;
+}
+.cv-dia { color: #0f172a; font-weight: 600; }
+.cv-horas { color: #1a56db; font-weight: 700; }
+.cv-cerrado .cv-dia  { color: #94a3b8; }
+.cv-cerrado .cv-horas { color: #ef4444; font-weight: 600; }
+.cv-estado { width: 100%; }
+.cv-badge-activo {
+  display: flex; align-items: center; gap: 7px; font-size: 14px !important;
+  font-weight: 600; color: #166534; background: #dcfce7; padding: 10px 14px;
+  border-radius: 10px; width: 100%; justify-content: center;
+}
+.cv-badge-activo i { color: #16a34a; font-size: 10px; }
+.cv-badge-inactivo {
+  display: flex; align-items: center; gap: 7px; font-size: 14px !important;
+  font-weight: 600; color: #991b1b; background: #fee2e2; padding: 10px 14px;
+  border-radius: 10px; width: 100%; justify-content: center;
+}
+.cv-badge-inactivo i { color: #ef4444; font-size: 10px; }
+.cv-nota {
+  font-size: 12px !important; color: #64748b; background: #f8fafc;
+  border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;
+  display: flex; align-items: flex-start; gap: 7px; line-height: 1.5; width: 100%;
+}
+.cv-nota i { color: #1a56db; flex-shrink: 0; margin-top: 1px; }
+
+@media (max-width: 900px) {
+  .cita-layout { flex-direction: column-reverse; }
+  .cita-right { width: 100%; position: static; }
+  .horarios-grilla { grid-template-columns: repeat(4, 1fr); }
+}

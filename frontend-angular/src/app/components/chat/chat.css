@@ -1,0 +1,386 @@
+.chat-page {
+  min-height: calc(100vh - 64px);
+  background: #f8f9fa;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.chat-layout {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  height: 600px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+/* Lista especialistas */
+.chat-lista {
+  width: 240px;
+  border-right: 1px solid #f1f3f5;
+  padding: 20px 16px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.chat-lista h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 14px;
+}
+
+.esp-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 4px;
+  position: relative;
+}
+
+.esp-item:hover, .esp-item.seleccionado { background: #e7f1ff; }
+
+/* ✅ Especialista con chat bloqueado */
+.esp-item.chat-bloqueado {
+  opacity: 0.7;
+}
+.esp-item.chat-bloqueado:hover { background: #f1f5f9; }
+
+.esp-item.tiene-noLeidos {
+  background: #fff7ed;
+  border: 1.5px solid #fed7aa;
+}
+.esp-item.tiene-noLeidos:hover { background: #ffedd5; }
+
+.esp-avatar {
+  width: 36px; height: 36px;
+  background: #cfe2ff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.esp-avatar i { color: #0d6efd; font-size: 16px; }
+.esp-avatar.avatar-noLeidos { background: #fed7aa; }
+.esp-avatar.avatar-noLeidos i { color: #ea580c; }
+
+.esp-info { flex: 1; min-width: 0; }
+.esp-item strong { display: block; font-size: 13px; color: #212529; }
+.esp-item span   { font-size: 11px; color: #0d6efd; }
+
+/* ✅ Etiqueta de estado del chat */
+.chat-estado-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #166534;
+  margin-top: 2px;
+}
+.chat-estado-label.bloqueado-label { color: #94a3b8; }
+
+.dot-noLeidos {
+  width: 10px; height: 10px;
+  background: #ef4444;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px #fff;
+  animation: pulse-dot 1.5s infinite;
+}
+@keyframes pulse-dot {
+  0%   { transform: scale(1); opacity: 1; }
+  50%  { transform: scale(1.3); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.empty-lista {
+  text-align: center; color: #6c757d; padding: 32px 10px;
+}
+.empty-lista i { font-size: 32px; color: #dee2e6; margin-bottom: 10px; display: block; }
+.empty-lista p { font-size: 13px; }
+
+/* Ventana de mensajes */
+.chat-ventana {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f3f5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chat-header i { font-size: 24px; color: #0d6efd; }
+.chat-header strong { display: block; font-size: 15px; color: #212529; }
+.chat-header span   { font-size: 12px; color: #6c757d; }
+
+/* ✅ Badges de estado en el header */
+.badge-chat-activo {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: #166534;
+  background: #dcfce7; padding: 4px 10px; border-radius: 20px;
+}
+.badge-chat-activo i { font-size: 8px; color: #16a34a; }
+
+.badge-chat-bloqueado {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: #64748b;
+  background: #f1f5f9; padding: 4px 10px; border-radius: 20px;
+}
+
+.chat-mensajes {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.burbuja {
+  max-width: 65%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.burbuja p     { margin: 0 0 4px; }
+.burbuja small { font-size: 11px; opacity: .6; display: block; }
+
+.burbuja.mio {
+  background: #0d6efd; color: #fff;
+  align-self: flex-end; border-bottom-right-radius: 4px;
+}
+.burbuja.suyo {
+  background: #f1f3f5; color: #212529;
+  align-self: flex-start; border-bottom-left-radius: 4px;
+}
+
+.empty-msgs {
+  text-align: center; color: #6c757d; font-size: 13px; margin: auto;
+}
+
+/* ✅ Mensaje de chat no disponible */
+.chat-no-disponible {
+  margin: auto;
+  text-align: center;
+  padding: 32px 24px;
+  color: #64748b;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 2px dashed #e2e8f0;
+  max-width: 360px;
+}
+.chat-no-disponible i { font-size: 40px; color: #cbd5e1; margin-bottom: 14px; display: block; }
+.chat-no-disponible p { font-size: 13px; margin: 4px 0; line-height: 1.6; }
+.chat-no-disponible p strong { color: #0f172a; font-size: 15px; }
+
+.chat-input {
+  display: flex;
+  gap: 10px;
+  padding: 14px 16px;
+  border-top: 1px solid #f1f3f5;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1.5px solid #dee2e6;
+  border-radius: 24px;
+  font-size: 14px;
+  outline: none;
+  font-family: 'Montserrat', sans-serif;
+}
+.chat-input input:focus { border-color: #0d6efd; }
+
+.chat-input button {
+  width: 40px; height: 40px;
+  background: #0d6efd; color: #fff;
+  border: none; border-radius: 50%;
+  cursor: pointer; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.2s;
+}
+.chat-input button:hover { background: #0b5ed7; }
+
+/* ✅ Input bloqueado */
+.chat-input-bloqueado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-top: 1px solid #f1f3f5;
+  background: #f8fafc;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
+}
+.chat-input-bloqueado i { font-size: 14px; }
+
+.chat-vacio {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #6c757d;
+}
+.chat-vacio i { font-size: 48px; color: #dee2e6; }
+.chat-vacio p { font-size: 14px; }/* ── Burbuja del sistema (recordatorio) ── */
+.burbuja-sistema {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  align-self: center;
+  background: #fefce8;
+  border: 1.5px solid #fde68a;
+  border-radius: 12px;
+  padding: 10px 14px;
+  max-width: 80%;
+  font-size: 13px;
+}
+
+.burbuja-sistema > i {
+  color: #d97706;
+  font-size: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.sistema-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sistema-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.burbuja-sistema p {
+  margin: 2px 0;
+  color: #1c1917;
+  line-height: 1.5;
+}
+
+.burbuja-sistema small {
+  font-size: 10px;
+  color: #a16207;
+  opacity: .8;
+}
+
+/* Botón cancelar cita dentro del recordatorio */
+.btn-cancelar-cita {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-cancelar-cita:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+.btn-cancelar-cita i { font-size: 15px; }
+
+/* Botón cancelar cita en chat no disponible */
+.btn-cancelar-cita {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px 24px;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-cancelar-cita:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+.btn-cancelar-cita i { font-size: 15px; }
+
+.cancelacion-vencida {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Respuestas rápidas */
+.respuestas-rapidas {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px 0;
+  flex-wrap: wrap;
+}
+
+.btn-rapido {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f0f7ff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 24px;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  font-family: 'Montserrat', sans-serif;
+  flex: 1 1 calc(50% - 4px);
+  justify-content: center;
+  min-width: 0;
+}
+
+.btn-rapido:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+}
+
+.btn-rapido:active {
+  transform: translateY(0);
+}
+
+.btn-rapido i {
+  font-size: 14px;
+  flex-shrink: 0;
+}

@@ -1,0 +1,139 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn .25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 36px 32px;
+  width: 340px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,.2);
+  animation: slideUp .3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Ícono con pulso */
+.icono-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.pulso {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.15);
+  animation: pulso 1.4s ease-in-out infinite;
+}
+
+@keyframes pulso {
+  0%, 100% { transform: scale(1);   opacity: .8; }
+  50%       { transform: scale(1.4); opacity: 0; }
+}
+
+.icono {
+  font-size: 28px;
+  color: #ef4444;
+  position: relative;
+  z-index: 1;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 8px;
+}
+
+p {
+  font-size: .9rem;
+  color: #64748b;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+/* Anillo SVG */
+.cuenta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.anillo {
+  width: 90px;
+  height: 90px;
+  transform: rotate(-90deg);
+}
+
+.fondo {
+  fill: none;
+  stroke: #f1f5f9;
+  stroke-width: 7;
+}
+
+.progreso {
+  fill: none;
+  stroke: #ef4444;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 213.6;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.numero {
+  position: absolute;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ef4444;
+}
+
+.sub {
+  font-size: .78rem;
+  color: #94a3b8;
+  margin-bottom: 24px;
+}
+
+.btn-continuar {
+  width: 100%;
+  padding: 12px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background .2s, transform .1s;
+}
+
+.btn-continuar:hover  { background: #1d4ed8; }
+.btn-continuar:active { transform: scale(.97); }

@@ -1,0 +1,78 @@
+<!-- ══════════════ BOTÓN FLOTANTE LLAMADA ══════════════ -->
+<button class="btn-llamada-flotante" (click)="mostrarTelefono = !mostrarTelefono">
+  <i class="fa-solid fa-phone"></i>
+  <span>¿Necesitas ayuda? Llámanos</span>
+</button>
+
+<div class="popup-telefono" *ngIf="mostrarTelefono" (click)="mostrarTelefono = false">
+  <div class="popup-telefono-box" (click)="$event.stopPropagation()">
+    <div class="popup-telefono-icono">
+      <i class="fa-solid fa-phone-volume"></i>
+    </div>
+    <h4>Centro de Salud Delicias de Villa</h4>
+    <a href="tel:+5117171717" class="popup-telefono-numero">
+      <i class="fa-solid fa-phone"></i> (01) 717-1717
+    </a>
+    <p class="popup-telefono-horario">
+      <i class="fa-solid fa-clock"></i> Lun – Sáb: 7:00 am – 7:00 pm
+    </p>
+    <button class="popup-telefono-cerrar" (click)="mostrarTelefono = false">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════ FILTROS SVG DE DALTONISMO (oculto) ══════════════ -->
+<svg aria-hidden="true" style="position:absolute; width:0; height:0; overflow:hidden;">
+  <defs>
+    <filter id="filtro-protanopia">
+      <feColorMatrix type="matrix" values="
+        0.567 0.433 0     0 0
+        0.558 0.442 0     0 0
+        0     0.242 0.758 0 0
+        0     0     0     1 0"/>
+    </filter>
+    <filter id="filtro-deuteranopia">
+      <feColorMatrix type="matrix" values="
+        0.625 0.375 0   0 0
+        0.7   0.3   0   0 0
+        0     0.3   0.7 0 0
+        0     0     0   1 0"/>
+    </filter>
+    <filter id="filtro-tritanopia">
+      <feColorMatrix type="matrix" values="
+        0.95  0.05  0     0 0
+        0     0.433 0.567 0 0
+        0     0.475 0.525 0 0
+        0     0     0     1 0"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- ══════════════ BOTÓN FLOTANTE MODO DALTONISMO ══════════════ -->
+<button class="btn-daltonismo-flotante" (click)="mostrarPanelDaltonismo = !mostrarPanelDaltonismo" title="Modo para daltonismo">
+  <i class="fa-solid fa-eye"></i>
+</button>
+
+<div class="panel-daltonismo" *ngIf="mostrarPanelDaltonismo" (click)="mostrarPanelDaltonismo = false">
+  <div class="panel-daltonismo-box" (click)="$event.stopPropagation()">
+    <h4><i class="fa-solid fa-eye"></i> Modo de visión</h4>
+
+    <button class="opcion-modo" [class.activo]="modoActual === 'normal'" (click)="elegirModo('normal')">
+      Normal
+    </button>
+    <button class="opcion-modo" [class.activo]="modoActual === 'protanopia'" (click)="elegirModo('protanopia')">
+      Protanopia <span>(dificultad con el rojo)</span>
+    </button>
+    <button class="opcion-modo" [class.activo]="modoActual === 'deuteranopia'" (click)="elegirModo('deuteranopia')">
+      Deuteranopia <span>(dificultad con el verde)</span>
+    </button>
+    <button class="opcion-modo" [class.activo]="modoActual === 'tritanopia'" (click)="elegirModo('tritanopia')">
+      Tritanopia <span>(dificultad con el azul)</span>
+    </button>
+
+    <button class="panel-daltonismo-cerrar" (click)="mostrarPanelDaltonismo = false">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+</div>

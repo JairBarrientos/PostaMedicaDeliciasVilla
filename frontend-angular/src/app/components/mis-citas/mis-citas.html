@@ -1,0 +1,167 @@
+<app-header></app-header>
+
+<main class="mis-citas-page">
+
+  <div class="page-header">
+    <div>
+      <h2><i class="fa-solid fa-calendar-days"></i> Mis reservas</h2>
+      <p>Historial de todas tus citas médicas</p>
+    </div>
+    <a routerLink="/dashboard" class="btn-nueva">
+      <i class="fa-solid fa-plus"></i> Nueva cita
+    </a>
+  </div>
+
+  <!-- AVISO -->
+  <div class="aviso-anticipacion" *ngIf="!cargando">
+    <i class="fa-solid fa-circle-info"></i>
+    Puedes cancelar tu cita con al menos <strong>1 día de anticipación</strong>.
+  </div>
+
+  <!-- NOTIFICACIONES -->
+  <div class="notif-exito" *ngIf="mensajeExito">
+    <i class="fa-solid fa-circle-check"></i> {{ mensajeExito }}
+  </div>
+  <div class="notif-error" *ngIf="mensajeError">
+    <i class="fa-solid fa-circle-xmark"></i> {{ mensajeError }}
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-wrapper" *ngIf="!cargando">
+    <div class="tabs">
+      <button [class.activo]="tabActivo === 'proximas'" (click)="tabActivo = 'proximas'">
+        <i class="fa-solid fa-calendar-check"></i>
+        Próximas
+        <span class="tab-badge" *ngIf="citasProximas.length > 0">{{ citasProximas.length }}</span>
+      </button>
+      <button [class.activo]="tabActivo === 'todas'" (click)="tabActivo = 'todas'">
+        <i class="fa-solid fa-list"></i>
+        Todas las citas
+        <span class="tab-badge tab-badge-gris">{{ todasLasCitas.length }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CARGANDO -->
+  <div class="loading" *ngIf="cargando">
+    <div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i></div>
+    <p>Cargando tus citas...</p>
+  </div>
+
+  <!-- LISTA -->
+  <div class="citas-lista" *ngIf="!cargando">
+
+    <div class="empty-state" *ngIf="citasActivas.length === 0 && tabActivo === 'proximas'">
+      <i class="fa-solid fa-calendar-check"></i>
+      <p>No tienes citas próximas.</p>
+      <a routerLink="/dashboard" class="btn-nueva"><i class="fa-solid fa-plus"></i> Agendar una cita</a>
+    </div>
+
+    <div class="empty-state" *ngIf="citasActivas.length === 0 && tabActivo === 'todas'">
+      <i class="fa-solid fa-calendar-xmark"></i>
+      <p>No tienes citas registradas aún.</p>
+      <a routerLink="/dashboard" class="btn-nueva"><i class="fa-solid fa-plus"></i> Agendar una cita</a>
+    </div>
+
+    <!-- ═══ CARD ═══ -->
+    <div class="cita-card" *ngFor="let c of citasActivas">
+
+      <!-- Barra lateral de color -->
+      <div class="card-barra" [ngClass]="getBarraClase(c.estado!)"></div>
+
+      <!-- BLOQUE FECHA -->
+      <div class="cita-fecha">
+        <span class="dia">{{ getDia(c.fecha) }}</span>
+        <span class="mes">{{ getMes(c.fecha) }}</span>
+        <span class="anio">{{ getAnio(c.fecha) }}</span>
+      </div>
+
+      <!-- DIVISOR -->
+      <div class="card-divider"></div>
+
+      <!-- BLOQUE CENTRAL: info + código + QR -->
+      <div class="card-centro">
+
+        <!-- Info principal -->
+        <div class="cita-info-top">
+          <strong class="especialista-nombre">{{ getNombreEspecialista(c.especialistaId) }}</strong>
+          <span class="estado-badge" [ngClass]="getEstadoClase(c.estado!)">
+            {{ getEstadoLabel(c.estado) }}
+          </span>
+        </div>
+
+        <div class="cita-info-mid">
+          <span class="dato-pill">
+            <i class="fa-solid fa-stethoscope"></i>
+            {{ getEspecialidad(c.especialistaId) }}
+          </span>
+          <span class="dato-pill">
+            <i class="fa-regular fa-clock"></i>
+            {{ c.hora ? c.hora.substring(0,5) : '' }}
+          </span>
+        </div>
+
+        <!-- Código + QR + avisos -->
+        <div class="cita-info-bottom">
+
+          <div class="codigo-qr-wrap">
+            <!-- QR generado con canvas -->
+            <canvas class="qr-mini"
+                    [id]="'qr-' + c.id"
+                    width="48" height="48"
+                    [attr.data-code]="c.codigoCita">
+            </canvas>
+            <div class="codigo-texto">
+              <span class="codigo-label">Código de reserva</span>
+              <span class="codigo-valor">{{ c.codigoCita }}</span>
+            </div>
+          </div>
+
+          <!-- Avisos estado -->
+          <div class="avisos-wrap">
+            <p class="aviso-confirmar" *ngIf="c.estado === 'POR_CONFIRMAR'">
+              <i class="fa-solid fa-hourglass-half"></i> Esperando confirmación
+            </p>
+            <p class="mensaje-cancelacion" *ngIf="c.estado === 'CANCELADA' && c.mensajeCancelacion">
+              <i class="fa-solid fa-circle-info"></i> {{ c.mensajeCancelacion }}
+            </p>
+            <button class="btn-cancelar" *ngIf="puedeCancelar(c)" (click)="abrirModalCancelacion(c)">
+              <i class="fa-solid fa-xmark"></i> Cancelar cita
+            </button>
+            <p class="aviso-vencido" *ngIf="cancelacionVencida(c)">
+              <i class="fa-solid fa-lock"></i> Cancelación no disponible
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ MODAL CANCELACIÓN ═══ -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-icono"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <h3>¿Cancelar esta cita?</h3>
+    <div class="modal-detalle" *ngIf="citaAcancelar">
+      <p><i class="fa-solid fa-user-doctor"></i> {{ getNombreEspecialista(citaAcancelar.especialistaId) }}</p>
+      <p><i class="fa-regular fa-calendar"></i> {{ getDia(citaAcancelar.fecha) }} {{ getMes(citaAcancelar.fecha) }} {{ getAnio(citaAcancelar.fecha) }} — {{ citaAcancelar.hora ? citaAcancelar.hora.substring(0,5) : '' }} hrs</p>
+      <p><i class="fa-solid fa-qrcode"></i> {{ citaAcancelar.codigoCita }}</p>
+    </div>
+    <p class="modal-advertencia">
+      <i class="fa-solid fa-circle-info"></i>
+      Esta acción no se puede deshacer. La cita quedará registrada como cancelada y contará dentro de tu límite mensual.
+    </p>
+    <div class="modal-acciones">
+      <button class="btn-modal-cancelar" (click)="cerrarModal()" [disabled]="cancelando">Volver</button>
+      <button class="btn-modal-confirmar" (click)="confirmarCancelacion()" [disabled]="cancelando">
+        <i class="fa-solid fa-spinner fa-spin" *ngIf="cancelando"></i>
+        <i class="fa-solid fa-xmark" *ngIf="!cancelando"></i>
+        {{ cancelando ? 'Cancelando...' : 'Sí, cancelar' }}
+      </button>
+    </div>
+  </div>
+</div>

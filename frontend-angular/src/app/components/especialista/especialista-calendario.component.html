@@ -1,0 +1,240 @@
+<div class="cal-layout" [class.panel-open]="panelAbierto">
+
+  <!-- ══════════ CALENDARIO PRINCIPAL ══════════ -->
+  <div class="cal-main">
+
+    <!-- TOPBAR -->
+    <div class="cal-topbar">
+      <div class="cal-topbar-left">
+        <i class="fa-solid fa-calendar-days cal-icon"></i>
+        <div>
+          <h3 class="cal-title">Mi calendario</h3>
+          <span class="cal-sub">{{ tituloSemana }}</span>
+        </div>
+      </div>
+      <div class="cal-topbar-right">
+        <div class="nav-semana">
+          <button (click)="semanaAnterior()"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="btn-hoy" (click)="irHoy()">Hoy</button>
+          <button (click)="semanaSiguiente()"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <button class="btn-ausencia" (click)="abrirPanel()">
+          <i class="fa-solid fa-calendar-xmark"></i> Registrar ausencia
+        </button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="cal-stats" *ngIf="!cargando">
+      <div class="stat azul">
+        <i class="fa-solid fa-calendar-check"></i>
+        <div>
+          <span class="stat-num">{{ totalProgramadas }}</span>
+          <span class="stat-lbl">Esta semana</span>
+        </div>
+      </div>
+      <div class="leyenda-inline">
+        <span class="ley"><span class="dot dot-azul"></span>Programada</span>
+        <span class="ley"><span class="dot dot-verde"></span>Atendida</span>
+        <span class="ley"><span class="dot dot-naranja"></span>No asistió</span>
+        <span class="ley"><span class="dot dot-ausente"></span>Ausente</span>
+        <span class="ley"><span class="dot dot-rango"></span>Rango bloqueado</span>
+        <span class="ley"><span class="dot dot-feriado"></span>Feriado</span>
+      </div>
+    </div>
+
+    <!-- CARGANDO -->
+    <div class="cal-loading" *ngIf="cargando">
+      <i class="fa-solid fa-spinner fa-spin"></i> Cargando calendario...
+    </div>
+
+    <!-- GRILLA -->
+    <div class="grid-scroll" *ngIf="!cargando">
+      <table class="cal-table">
+        <thead>
+          <tr>
+            <th class="th-hora-head"></th>
+            <th *ngFor="let dia of dias"
+                class="th-dia"
+                [class.th-hoy]="dia.esHoy"
+                [class.th-ausente]="esAusenciaPropia(dia.str)"
+                [class.th-feriado]="esFeriado(dia.str)"
+                [class.th-domingo]="esDomingo(dia.fecha)">
+              <div class="th-dia-content">
+                <span class="th-dnom">{{ dia.nombre }}</span>
+                <span class="th-dnum">{{ dia.num }}</span>
+                <span class="th-badge th-badge-hoy"     *ngIf="dia.esHoy && !esDiaCompleto(dia.str)">Hoy</span>
+                <span class="th-badge th-badge-feriado" *ngIf="esFeriado(dia.str)">
+                  <i class="fa-solid fa-star"></i> {{ motivoDia(dia.str) }}
+                </span>
+                <span class="th-badge th-badge-ausente" *ngIf="esAusenciaPropia(dia.str) && !esFeriado(dia.str)">
+                  <i class="fa-solid fa-circle-xmark"></i> Ausente
+                </span>
+                <span class="th-badge th-badge-dom" *ngIf="esDomingo(dia.fecha) && !esDiaCompleto(dia.str)">No laboral</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let hora of horas; let hi = index" [class.tr-media]="hora.endsWith('30')">
+            <td class="td-hora">
+              <span *ngIf="!hora.endsWith('30')">{{ horasLabel[hi] }}</span>
+              <span class="td-hora-media" *ngIf="hora.endsWith('30')">:30</span>
+            </td>
+            <td *ngFor="let dia of dias"
+                class="td-celda"
+                [class.td-hoy]="dia.esHoy"
+                [class.td-dia-bloq]="esDiaCompleto(dia.str) || esDomingo(dia.fecha)"
+                [class.td-rango-bloq]="!esDiaCompleto(dia.str) && !esDomingo(dia.fecha) && esCeldaBloqueada(dia.str, hora)"
+                [title]="esCeldaBloqueada(dia.str, hora) ? motivoCelda(dia.str, hora) : ''">
+
+              <ng-container *ngIf="!esDiaCompleto(dia.str) && !esDomingo(dia.fecha) && !esCeldaBloqueada(dia.str, hora)">
+                <ng-container *ngIf="getCita(dia.str, hora) as cita">
+                  <div class="chip" [ngClass]="claseCita(cita.estado)"
+                       [title]="getNombrePaciente(cita.pacienteId) + ' – ' + labelEstado(cita.estado)">
+                    <i class="fa-solid" [ngClass]="iconoCita(cita.estado)"></i>
+                    <div class="chip-info">
+                      <span class="chip-pac">{{ getNombrePaciente(cita.pacienteId) }}</span>
+                      <span class="chip-est">{{ labelEstado(cita.estado) }}</span>
+                    </div>
+                  </div>
+                </ng-container>
+              </ng-container>
+
+              <div class="rango-label" *ngIf="!esDiaCompleto(dia.str) && !esDomingo(dia.fecha) && esCeldaBloqueada(dia.str, hora)">
+                <i class="fa-solid fa-lock"></i>
+                <span>{{ motivoCelda(dia.str, hora) }}</span>
+              </div>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════ PANEL LATERAL DE AUSENCIAS ══════════ -->
+  <div class="panel-lateral" *ngIf="panelAbierto">
+
+    <div class="panel-header">
+      <h4><i class="fa-solid fa-calendar-xmark"></i> Mis ausencias</h4>
+      <button class="panel-close" (click)="cerrarPanel()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Mensaje flash -->
+    <div class="panel-msg" *ngIf="mensajePanel"
+         [class.msg-ok]="tipoMensaje==='ok'"
+         [class.msg-error]="tipoMensaje==='error'">
+      <i class="fa-solid"
+         [class.fa-circle-check]="tipoMensaje==='ok'"
+         [class.fa-circle-xmark]="tipoMensaje==='error'"></i>
+      {{ mensajePanel }}
+    </div>
+
+    <!-- INFO DEL ESPECIALISTA -->
+    <div class="panel-esp-info">
+      <i class="fa-solid fa-user-doctor"></i>
+      <span>{{ especialistaNombre }}</span>
+    </div>
+
+    <!-- ── LISTA DE AUSENCIAS ── -->
+    <div *ngIf="modoPanel==='lista'" class="panel-body">
+      <button class="btn-nuevo-ausencia" (click)="modoPanel='nuevo'">
+        <i class="fa-solid fa-plus"></i> Nueva ausencia
+      </button>
+
+      <p class="panel-semana-lbl">Ausencias esta semana</p>
+
+      <div class="ausencia-item" *ngFor="let b of ausenciasSemana()">
+        <div class="ausencia-info">
+          <div class="ausencia-fecha">
+            <i class="fa-solid fa-calendar-day"></i> {{ b.fecha }}
+          </div>
+          <div class="ausencia-tipo" [class.tipo-dia]="b.tipo==='DIA_COMPLETO'" [class.tipo-rango]="b.tipo==='RANGO_HORAS'">
+            <span *ngIf="b.tipo==='DIA_COMPLETO'">Día completo</span>
+            <span *ngIf="b.tipo==='RANGO_HORAS'">{{ b.horaInicio?.substring(0,5) }} – {{ b.horaFin?.substring(0,5) }}</span>
+          </div>
+          <div class="ausencia-motivo">{{ b.motivo }}</div>
+        </div>
+        <button class="btn-del" (click)="eliminarAusencia(b.id)" title="Eliminar">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+
+      <div class="panel-empty" *ngIf="ausenciasSemana().length === 0 && feriadosSemana().length === 0">
+        <i class="fa-regular fa-calendar-check"></i>
+        <span>Sin ausencias esta semana</span>
+      </div>
+
+      <!-- Feriados de la semana (solo lectura) -->
+      <ng-container *ngIf="feriadosSemana().length > 0">
+        <p class="panel-semana-lbl" style="margin-top: 16px">Feriados esta semana</p>
+        <div class="ausencia-item feriado-item" *ngFor="let f of feriadosSemana()">
+          <div class="ausencia-info">
+            <div class="ausencia-fecha"><i class="fa-solid fa-star"></i> {{ f.fecha }}</div>
+            <div class="ausencia-motivo">{{ f.motivo }}</div>
+          </div>
+          <span class="feriado-badge"><i class="fa-solid fa-lock"></i></span>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- ── FORMULARIO NUEVA AUSENCIA ── -->
+    <div *ngIf="modoPanel==='nuevo'" class="panel-body">
+      <button class="btn-volver" (click)="modoPanel='lista'">
+        <i class="fa-solid fa-arrow-left"></i> Volver
+      </button>
+
+      <div class="form-ausencia">
+        <div class="fb-campo">
+          <label>Tipo de ausencia</label>
+          <div class="tipo-selector">
+            <button [class.sel]="nuevaAusencia.tipo==='DIA_COMPLETO'" (click)="nuevaAusencia.tipo='DIA_COMPLETO'">
+              <i class="fa-solid fa-calendar-xmark"></i> Día completo
+            </button>
+            <button [class.sel]="nuevaAusencia.tipo==='RANGO_HORAS'" (click)="nuevaAusencia.tipo='RANGO_HORAS'">
+              <i class="fa-solid fa-clock"></i> Rango de horas
+            </button>
+          </div>
+        </div>
+
+        <div class="fb-campo">
+          <label>Fecha</label>
+          <input type="date" [(ngModel)]="nuevaAusencia.fecha">
+        </div>
+
+        <ng-container *ngIf="nuevaAusencia.tipo==='RANGO_HORAS'">
+          <div class="fb-campo">
+            <label>Hora inicio</label>
+            <select [(ngModel)]="nuevaAusencia.horaInicio">
+              <option *ngFor="let h of horas" [value]="h">{{ h }}</option>
+            </select>
+          </div>
+          <div class="fb-campo">
+            <label>Hora fin</label>
+            <select [(ngModel)]="nuevaAusencia.horaFin">
+              <option *ngFor="let h of horas" [value]="h">{{ h }}</option>
+            </select>
+          </div>
+        </ng-container>
+
+        <div class="fb-campo">
+          <label>Motivo</label>
+          <input type="text" [(ngModel)]="nuevaAusencia.motivo"
+                 placeholder="Ej: Cita médica, Capacitación...">
+        </div>
+
+        <div class="aviso-info">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>Esta ausencia será visible en el calendario del administrador y bloqueará nuevas reservas de pacientes.</span>
+        </div>
+
+        <button class="btn-guardar-ausencia" (click)="guardarAusencia()" [disabled]="guardando">
+          <i class="fa-solid fa-floppy-disk"></i>
+          {{ guardando ? 'Guardando...' : 'Registrar ausencia' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

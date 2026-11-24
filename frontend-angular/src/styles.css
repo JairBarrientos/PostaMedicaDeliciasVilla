@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+a {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#contenido-filtrable.modo-protanopia { filter: url(#filtro-protanopia); }
+#contenido-filtrable.modo-deuteranopia { filter: url(#filtro-deuteranopia); }
+#contenido-filtrable.modo-tritanopia { filter: url(#filtro-tritanopia); }

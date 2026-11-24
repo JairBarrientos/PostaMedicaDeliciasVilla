@@ -1,0 +1,288 @@
+<div class="cal-layout" [class.panel-open]="panelAbierto">
+
+  <!-- ══════════ CALENDARIO PRINCIPAL ══════════ -->
+  <div class="cal-main">
+
+    <!-- TOPBAR -->
+    <div class="cal-topbar">
+      <div class="cal-topbar-left">
+        <i class="fa-solid fa-calendar-days cal-icon"></i>
+        <div>
+          <h3 class="cal-title">Calendario de citas</h3>
+          <span class="cal-sub">{{ tituloSemana }}</span>
+        </div>
+      </div>
+      <div class="cal-topbar-right">
+        <div class="sel-especialista">
+          <i class="fa-solid fa-user-doctor"></i>
+          <select [(ngModel)]="especialistaSeleccionadoId" (ngModelChange)="onEspChange()">
+            <option [ngValue]="null">— Selecciona especialista —</option>
+            <option *ngFor="let e of especialistas" [ngValue]="e.id">
+              Dr/a. {{ e.nombreCompleto }} · {{ e.especialidad }}
+            </option>
+          </select>
+        </div>
+        <div class="nav-semana">
+          <button (click)="semanaAnterior()"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="btn-hoy" (click)="irHoy()">Hoy</button>
+          <button (click)="semanaSiguiente()"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <button class="btn-bloquear" (click)="abrirPanel()" [disabled]="!especialistaSeleccionadoId">
+          <i class="fa-solid fa-lock"></i> Gestionar bloqueos
+        </button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="cal-stats" *ngIf="especialistaSeleccionadoId && !cargando">
+      <div class="stat azul">
+        <i class="fa-solid fa-calendar-check"></i>
+        <div><span class="stat-num">{{ totalProgramadas }}</span><span class="stat-lbl">Esta semana</span></div>
+      </div>
+      <div class="leyenda-inline">
+        <span class="ley"><span class="dot dot-azul"></span>Programada</span>
+        <span class="ley"><span class="dot dot-verde"></span>Atendida</span>
+        <span class="ley"><span class="dot dot-naranja"></span>No asistió</span>
+        <span class="ley"><span class="dot dot-rojo"></span>Cancelada</span>
+        <span class="ley"><span class="dot dot-bloq"></span>No trabaja</span>
+        <span class="ley"><span class="dot dot-rango"></span>Rango bloqueado</span>
+        <span class="ley"><span class="dot dot-feriado"></span>Feriado</span>
+      </div>
+      <div class="cal-reportes">
+        <button class="btn-excel" (click)="descargarCitasEspecialista()" title="Descargar citas en Excel">
+          <i class="fa-solid fa-file-excel"></i> Descargar citas
+        </button>
+        <button class="btn-excel btn-excel-gris" (click)="descargarDisponibilidad()" title="Descargar disponibilidad en Excel">
+          <i class="fa-solid fa-file-excel"></i> Descargar disponibilidad
+        </button>
+      </div>
+    </div>
+
+    <!-- VACÍO -->
+    <div class="cal-vacio" *ngIf="!especialistaSeleccionadoId">
+      <i class="fa-solid fa-calendar-days"></i>
+      <p>Selecciona un especialista para visualizar su calendario</p>
+    </div>
+
+    <!-- CARGANDO -->
+    <div class="cal-loading" *ngIf="cargando && especialistaSeleccionadoId">
+      <i class="fa-solid fa-spinner fa-spin"></i> Cargando calendario...
+    </div>
+
+    <!-- GRILLA -->
+    <div class="grid-scroll" *ngIf="especialistaSeleccionadoId && !cargando">
+      <table class="cal-table">
+        <thead>
+          <tr>
+            <th class="th-hora-head"></th>
+            <th *ngFor="let dia of dias"
+                class="th-dia"
+                [class.th-hoy]="dia.esHoy"
+                [class.th-bloq]="esDiaCompleto(dia.str)"
+                [class.th-feriado]="esFeriado(dia.str)"
+                [class.th-domingo]="esDomingo(dia.fecha)">
+              <div class="th-dia-content">
+                <span class="th-dnom">{{ dia.nombre }}</span>
+                <span class="th-dnum">{{ dia.num }}</span>
+                <span class="th-badge th-badge-hoy"     *ngIf="dia.esHoy && !esDiaCompleto(dia.str)">Hoy</span>
+                <span class="th-badge th-badge-feriado" *ngIf="esFeriado(dia.str)">
+                  <i class="fa-solid fa-star"></i> {{ motivoDia(dia.str) }}
+                </span>
+                <span class="th-badge th-badge-bloq"    *ngIf="esDiaCompleto(dia.str) && !esFeriado(dia.str)">
+                  <i class="fa-solid fa-ban"></i> No trabaja
+                </span>
+                <span class="th-badge th-badge-dom"     *ngIf="esDomingo(dia.fecha) && !esDiaCompleto(dia.str)">No laboral</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let hora of horas; let hi = index" [class.tr-media]="hora.endsWith('30')">
+            <td class="td-hora">
+              <span *ngIf="!hora.endsWith('30')">{{ horasLabel[hi] }}</span>
+              <span class="td-hora-media" *ngIf="hora.endsWith('30')">:30</span>
+            </td>
+            <td *ngFor="let dia of dias"
+                class="td-celda"
+                [class.td-hoy]="dia.esHoy"
+                [class.td-dia-bloq]="esDiaCompleto(dia.str) || esDomingo(dia.fecha)"
+                [class.td-rango-bloq]="!esDiaCompleto(dia.str) && !esDomingo(dia.fecha) && esCeldaBloqueada(dia.str, hora)"
+                [title]="esCeldaBloqueada(dia.str, hora) ? motivoCelda(dia.str, hora) : ''">
+
+              <ng-container *ngIf="!esDiaCompleto(dia.str) && !esDomingo(dia.fecha) && !esCeldaBloqueada(dia.str, hora)">
+                <ng-container *ngIf="getCita(dia.str, hora) as cita">
+                  <div class="chip" [ngClass]="claseCita(cita.estado)"
+                       [title]="'Paciente #' + cita.pacienteId + ' – ' + labelEstado(cita.estado)">
+                    <i class="fa-solid" [ngClass]="iconoCita(cita.estado)"></i>
+                    <div class="chip-info">
+                      <span class="chip-pac">Pac. #{{ cita.pacienteId }}</span>
+                      <span class="chip-est">{{ labelEstado(cita.estado) }}</span>
+                    </div>
+                  </div>
+                </ng-container>
+              </ng-container>
+
+              <div class="rango-label" *ngIf="!esDiaCompleto(dia.str) && !esDomingo(dia.fecha) && esCeldaBloqueada(dia.str, hora)">
+                <i class="fa-solid fa-lock"></i>
+                <span>{{ motivoCelda(dia.str, hora) }}</span>
+              </div>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════ PANEL LATERAL DE BLOQUEOS ══════════ -->
+  <div class="panel-lateral" *ngIf="panelAbierto">
+
+    <div class="panel-header">
+      <h4><i class="fa-solid fa-lock"></i> Gestionar bloqueos</h4>
+      <button class="panel-close" (click)="cerrarPanel()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- Mensaje flash -->
+    <div class="panel-msg" *ngIf="mensajePanel" [class.msg-ok]="tipoMensaje==='ok'" [class.msg-error]="tipoMensaje==='error'">
+      <i class="fa-solid" [class.fa-circle-check]="tipoMensaje==='ok'" [class.fa-circle-xmark]="tipoMensaje==='error'"></i>
+      {{ mensajePanel }}
+    </div>
+
+    <!-- Tabs del panel -->
+    <div class="panel-tabs">
+      <button [class.activo]="tabPanel==='especialista'" (click)="tabPanel='especialista'; modoPanel='lista'">
+        <i class="fa-solid fa-user-doctor"></i> Especialista
+      </button>
+      <button [class.activo]="tabPanel==='feriado'" (click)="tabPanel='feriado'; modoPanel='lista'">
+        <i class="fa-solid fa-star"></i> Feriado global
+      </button>
+    </div>
+
+    <!-- ── TAB ESPECIALISTA ── -->
+    <ng-container *ngIf="tabPanel==='especialista'">
+
+      <div class="panel-esp-info" *ngIf="espActual">
+        <i class="fa-solid fa-user-doctor"></i>
+        <span>{{ espActual.nombreCompleto }}</span>
+      </div>
+
+      <!-- Lista de bloqueos -->
+      <div *ngIf="modoPanel==='lista'" class="panel-body">
+        <button class="btn-nuevo-bloqueo" (click)="modoPanel='nuevo'">
+          <i class="fa-solid fa-plus"></i> Nuevo bloqueo
+        </button>
+
+        <p class="panel-semana-lbl">Bloqueos esta semana</p>
+
+        <div class="bloqueo-item" *ngFor="let b of bloqueosSemana()">
+          <div class="bloqueo-info">
+            <div class="bloqueo-fecha">
+              <i class="fa-solid fa-calendar-day"></i> {{ b.fecha }}
+            </div>
+            <div class="bloqueo-tipo" [class.tipo-dia]="b.tipo==='DIA_COMPLETO'" [class.tipo-rango]="b.tipo==='RANGO_HORAS'">
+              <span *ngIf="b.tipo==='DIA_COMPLETO'">Día completo</span>
+              <span *ngIf="b.tipo==='RANGO_HORAS'">{{ b.horaInicio?.substring(0,5) }} – {{ b.horaFin?.substring(0,5) }}</span>
+            </div>
+            <div class="bloqueo-motivo">{{ b.motivo }}</div>
+          </div>
+          <button class="btn-del" (click)="eliminarBloqueo(b.id)" title="Eliminar">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+
+        <div class="panel-empty" *ngIf="bloqueosSemana().length === 0">
+          <i class="fa-regular fa-calendar-check"></i>
+          <span>Sin bloqueos esta semana</span>
+        </div>
+      </div>
+
+      <!-- Formulario nuevo bloqueo -->
+      <div *ngIf="modoPanel==='nuevo'" class="panel-body">
+        <button class="btn-volver" (click)="modoPanel='lista'">
+          <i class="fa-solid fa-arrow-left"></i> Volver
+        </button>
+
+        <div class="form-bloqueo">
+          <div class="fb-campo">
+            <label>Tipo de bloqueo</label>
+            <div class="tipo-selector">
+              <button [class.sel]="nuevoBloqueo.tipo==='DIA_COMPLETO'" (click)="nuevoBloqueo.tipo='DIA_COMPLETO'">
+                <i class="fa-solid fa-calendar-xmark"></i> Día completo
+              </button>
+              <button [class.sel]="nuevoBloqueo.tipo==='RANGO_HORAS'" (click)="nuevoBloqueo.tipo='RANGO_HORAS'">
+                <i class="fa-solid fa-clock"></i> Rango de horas
+              </button>
+            </div>
+          </div>
+
+          <div class="fb-campo">
+            <label>Fecha</label>
+            <input type="date" [(ngModel)]="nuevoBloqueo.fecha">
+          </div>
+
+          <ng-container *ngIf="nuevoBloqueo.tipo==='RANGO_HORAS'">
+            <div class="fb-campo">
+              <label>Hora inicio</label>
+              <select [(ngModel)]="nuevoBloqueo.horaInicio">
+                <option *ngFor="let h of horas" [value]="h">{{ h }}</option>
+              </select>
+            </div>
+            <div class="fb-campo">
+              <label>Hora fin</label>
+              <select [(ngModel)]="nuevoBloqueo.horaFin">
+                <option *ngFor="let h of horas" [value]="h">{{ h }}</option>
+              </select>
+            </div>
+          </ng-container>
+
+          <div class="fb-campo">
+            <label>Motivo</label>
+            <input type="text" [(ngModel)]="nuevoBloqueo.motivo" placeholder="Ej: Mantenimiento, Reunión...">
+          </div>
+
+          <button class="btn-guardar-bloqueo" (click)="guardarBloqueo()" [disabled]="guardandoBloqueo">
+            <i class="fa-solid fa-floppy-disk"></i>
+            {{ guardandoBloqueo ? 'Guardando...' : 'Guardar bloqueo' }}
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── TAB FERIADO GLOBAL ── -->
+    <ng-container *ngIf="tabPanel==='feriado'">
+      <div class="panel-body">
+
+        <div class="form-bloqueo">
+          <div class="fb-campo">
+            <label>Fecha del feriado</label>
+            <input type="date" [(ngModel)]="nuevoFeriado.fecha">
+          </div>
+          <div class="fb-campo">
+            <label>Nombre / motivo</label>
+            <input type="text" [(ngModel)]="nuevoFeriado.motivo" placeholder="Ej: Día de la Independencia">
+          </div>
+          <button class="btn-guardar-bloqueo feriado" (click)="guardarFeriado()" [disabled]="guardandoBloqueo">
+            <i class="fa-solid fa-star"></i>
+            {{ guardandoBloqueo ? 'Guardando...' : 'Agregar feriado' }}
+          </button>
+        </div>
+
+        <p class="panel-semana-lbl">Feriados esta semana</p>
+        <div class="bloqueo-item" *ngFor="let f of feriadosSemana()">
+          <div class="bloqueo-info">
+            <div class="bloqueo-fecha"><i class="fa-solid fa-star"></i> {{ f.fecha }}</div>
+            <div class="bloqueo-motivo">{{ f.motivo }}</div>
+          </div>
+          <button class="btn-del" (click)="eliminarFeriado(f.fecha)">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+        <div class="panel-empty" *ngIf="feriadosSemana().length===0">
+          <i class="fa-regular fa-calendar-check"></i>
+          <span>Sin feriados esta semana</span>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

@@ -1,0 +1,299 @@
+<div class="auth-container">
+  <div class="auth-card" [class.auth-card-login]="vista() === 'login'">
+
+    <!-- HEADER -->
+    <div class="auth-header">
+      <div class="logo">
+        <i class="fa-solid fa-hospital"></i>
+        <div class="logo-text">
+          <span>Posta Médica</span>
+          <strong>Delicias de Villa</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- SWITCHER -->
+    <div class="view-switcher">
+      <button [class.active]="vista() === 'login'" (click)="vista.set('login')">
+        Iniciar sesión
+      </button>
+      <button [class.active]="vista() === 'registro'" (click)="vista.set('registro')">
+        Registrarse
+      </button>
+    </div>
+
+    <!-- LOGIN -->
+    @if (vista() === 'login') {
+      <div class="form-section">
+        <h2>Iniciar sesión</h2>
+        <p class="subtitle">Ingresa tus credenciales para continuar</p>
+
+        <form (ngSubmit)="onLogin()" class="auth-form">
+
+          <div class="input-group">
+            <label>Tipo de usuario</label>
+            <select [(ngModel)]="loginData.rol" name="rol">
+              <option value="PACIENTE">Paciente</option>
+              <option value="ESPECIALISTA">Especialista</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>DNI o correo</label>
+            <input type="text" name="identificador"
+                   [(ngModel)]="loginData.identificador"
+                   placeholder="8 dígitos o @correo.com">
+          </div>
+
+          <div class="input-group">
+            <label>Contraseña</label>
+            <input type="password" name="password"
+                   [(ngModel)]="loginData.password"
+                   placeholder="**********"
+                   autocomplete="current-password">
+          </div>
+
+          <button type="submit" class="btn-submit">Ingresar</button>
+        </form>
+      </div>
+    }
+
+    <!-- REGISTRO -->
+    @if (vista() === 'registro') {
+      <div class="form-section">
+        <h2>Crear cuenta</h2>
+        <p class="subtitle">Solo pacientes pueden registrarse aquí</p>
+
+        <form (ngSubmit)="onRegister()" class="auth-form">
+
+          <!-- Nombres -->
+          <div class="input-group" [class.campo-error]="errores.nombres">
+            <label>Nombres</label>
+            <input type="text" name="nombres"
+                   [(ngModel)]="registroData.nombres"
+                   (ngModelChange)="limpiarError('nombres')"
+                   placeholder="Indique sus nombres"
+                   maxlength="25">
+            <span class="error-msg" *ngIf="errores.nombres">
+              <i class="fa-solid fa-circle-exclamation"></i> {{ errores.nombres }}
+            </span>
+          </div>
+
+          <!-- Apellidos -->
+          <div class="input-group" [class.campo-error]="errores.apellidos">
+            <label>Apellidos</label>
+            <input type="text" name="apellidos"
+                   [(ngModel)]="registroData.apellidos"
+                   (ngModelChange)="limpiarError('apellidos')"
+                   placeholder="Indique sus apellidos"
+                   maxlength="25">
+            <span class="error-msg" *ngIf="errores.apellidos">
+              <i class="fa-solid fa-circle-exclamation"></i> {{ errores.apellidos }}
+            </span>
+          </div>
+
+          <!-- DNI -->
+          <div class="input-group" [class.campo-error]="errores.dni">
+            <label>DNI</label>
+            <input type="text" name="dni"
+                   [(ngModel)]="registroData.dni"
+                   (ngModelChange)="limpiarError('dni')"
+                   placeholder="8 dígitos" maxlength="8">
+            <span class="error-msg" *ngIf="errores.dni">
+              <i class="fa-solid fa-circle-exclamation"></i> {{ errores.dni }}
+            </span>
+          </div>
+
+          <!-- Correo -->
+          <div class="input-group" [class.campo-error]="errores.correo">
+            <label>Correo electrónico</label>
+            <input type="email" name="correo"
+                   [(ngModel)]="registroData.correo"
+                   (ngModelChange)="limpiarError('correo')"
+                   placeholder="@correo.com">
+            <span class="error-msg" *ngIf="errores.correo">
+              <i class="fa-solid fa-circle-exclamation"></i> {{ errores.correo }}
+            </span>
+          </div>
+
+          <!-- Teléfono -->
+          <div class="input-group" [class.campo-error]="errores.telefono">
+            <label>
+              Teléfono
+              <span class="tooltip-wrap">
+                <i class="fa-solid fa-circle-info tooltip-icon"></i>
+                <span class="tooltip-box">
+                  <i class="fa-solid fa-flag"></i>
+                  Perú: los celulares empiezan con <strong>9</strong> y tienen 9 dígitos.
+                </span>
+              </span>
+            </label>
+            <input type="text" name="telefono"
+                   [(ngModel)]="registroData.telefono"
+                   (ngModelChange)="limpiarError('telefono')"
+                   placeholder="9XXXXXXXX" maxlength="9">
+            <span class="error-msg" *ngIf="errores.telefono">
+              <i class="fa-solid fa-circle-exclamation"></i> {{ errores.telefono }}
+            </span>
+          </div>
+
+          <!-- Contraseña -->
+          <div class="input-group" [class.campo-error]="errores.password">
+            <label>
+              Contraseña
+              <span class="tooltip-wrap">
+                <i class="fa-solid fa-circle-info tooltip-icon"></i>
+                <span class="tooltip-box">
+                  <i class="fa-solid fa-lock"></i>
+                  Mínimo 6 caracteres con <strong>letras</strong>, <strong>números</strong> y al menos un <strong>carácter especial</strong> (!&#64;#$%).
+                </span>
+              </span>
+            </label>
+            <input type="password" name="password"
+                   [(ngModel)]="registroData.password"
+                   (ngModelChange)="limpiarError('password')"
+                   placeholder="Ej: MiClave1!">
+            <span class="error-msg" *ngIf="errores.password">
+              <i class="fa-solid fa-circle-exclamation"></i> {{ errores.password }}
+            </span>
+          </div>
+
+          <!-- SIS -->
+          <div class="checkbox-group" [class.campo-error-sis]="errores.sis">
+            <label class="checkbox-label" [class.sis-marcado]="registroData.afiliadoSis">
+              <input type="checkbox" name="afiliadoSis"
+                     [(ngModel)]="registroData.afiliadoSis"
+                     (ngModelChange)="limpiarError('sis')">
+              <span>Estoy afiliado al SIS</span>
+              <i class="fa-solid fa-circle-check sis-check" *ngIf="registroData.afiliadoSis"></i>
+            </label>
+            <div class="sis-aviso" *ngIf="!registroData.afiliadoSis && !errores.sis">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span>Este servicio es exclusivo para pacientes afiliados al SIS.</span>
+            </div>
+            <div class="sis-ok" *ngIf="registroData.afiliadoSis">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>Afiliación al SIS confirmada. Puedes continuar.</span>
+            </div>
+          </div>
+          <span class="error-msg error-sis" *ngIf="errores.sis">
+            <i class="fa-solid fa-circle-exclamation"></i> {{ errores.sis }}
+          </span>
+
+          <p class="info-text">
+            <i class="fa-solid fa-circle-info"></i>
+            Tu cuenta quedará pendiente hasta ser aprobada por el administrador.
+          </p>
+
+          <button type="submit" class="btn-submit">Crear cuenta</button>
+        </form>
+      </div>
+    }
+
+  </div>
+
+  <!-- NOTIFICACIÓN -->
+  @if (notificacion()) {
+    <div class="notification" [class.success]="notificacion()?.tipo === 'exito'"
+         [class.error]="notificacion()?.tipo === 'error'"
+         [class.warning]="notificacion()?.tipo === 'warning'">
+      {{ notificacion()?.mensaje }}
+    </div>
+  }
+</div>
+
+<!-- ══════════════ MODAL ALERTA LOGIN ══════════════ -->
+<div class="modal-registro-overlay" *ngIf="mostrarModalAlerta()" (click)="cerrarModalAlerta()">
+  <div class="modal-registro-box modal-alerta-box" (click)="$event.stopPropagation()">
+    <div class="modal-alerta-content">
+
+      <!-- Ícono -->
+      <div class="modal-alerta-icono"
+           [class.icono-error]="alertaTipo() === 'error'"
+           [class.icono-warning]="alertaTipo() === 'warning'">
+        <i class="fa-solid fa-xmark" *ngIf="alertaTipo() === 'error'"></i>
+        <i class="fa-solid fa-hourglass-half" *ngIf="alertaTipo() === 'warning'"></i>
+      </div>
+
+      <h3 class="modal-alerta-titulo">{{ alertaTitulo() }}</h3>
+      <p class="modal-alerta-desc">{{ alertaDescripcion() }}</p>
+
+      <button class="modal-alerta-btn"
+              [class.btn-alerta-error]="alertaTipo() === 'error'"
+              [class.btn-alerta-warning]="alertaTipo() === 'warning'"
+              (click)="cerrarModalAlerta()">
+        Entendido
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL BIENVENIDA LOGIN ══════════════ -->
+<div class="modal-registro-overlay" *ngIf="mostrarModalBienvenida()">
+  <div class="modal-registro-box modal-bienvenida-box">
+    <div class="modal-bienvenida-content">
+      <div class="modal-bienvenida-icono">
+        <i [class]="iconoBienvenida()"></i>
+      </div>
+      <p class="modal-bienvenida-saludo">{{ mensajeBienvenida().split(',')[0] }},</p>
+      <h3 class="modal-bienvenida-nombre">{{ mensajeBienvenida().split(',')[1]?.trim() }}</h3>
+      <div class="modal-bienvenida-barra">
+        <div class="modal-bienvenida-progreso"></div>
+      </div>
+      <p class="modal-bienvenida-sub">Redirigiendo...</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL ÉXITO REGISTRO ══════════════ -->
+<div class="modal-registro-overlay" *ngIf="mostrarModalExito()">
+  <div class="modal-registro-box">
+
+    <!-- ESTADO: CARGANDO -->
+    <div class="modal-cargando" *ngIf="cargandoRegistro()">
+      <div class="spinner-ring"></div>
+      <p class="modal-cargando-txt">Creando tu cuenta...</p>
+    </div>
+
+    <!-- ESTADO: ÉXITO -->
+    <div class="modal-exito-content" *ngIf="!cargandoRegistro()">
+      <div class="modal-check-circle">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <h3>¡Cuenta creada!</h3>
+      <p>Tu registro fue exitoso. Tu cuenta está <strong>pendiente de aprobación</strong> por el administrador.</p>
+      <p class="modal-subtext">
+        <i class="fa-solid fa-clock"></i>
+        Serás redirigido al inicio de sesión en unos momentos...
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════ BOTÓN FLOTANTE LLAMADA ══════════════ -->
+<button class="btn-llamada-flotante" (click)="mostrarTelefono = !mostrarTelefono">
+  <i class="fa-solid fa-phone"></i>
+  <span>¿Necesitas ayuda? Llámanos</span>
+</button>
+
+<!-- POPUP NÚMERO DE CONTACTO -->
+<div class="popup-telefono" *ngIf="mostrarTelefono" (click)="mostrarTelefono = false">
+  <div class="popup-telefono-box" (click)="$event.stopPropagation()">
+    <div class="popup-telefono-icono">
+      <i class="fa-solid fa-phone-volume"></i>
+    </div>
+    <h4>Centro de Salud Delicias de Villa</h4>
+    <a href="tel:+51 983 283 472" class="popup-telefono-numero">
+      <i class="fa-solid fa-phone"></i> (01) 717-1717
+    </a>
+    <p class="popup-telefono-horario">
+      <i class="fa-solid fa-clock"></i> Lun – Sáb: 7:00 am – 7:00 pm
+    </p>
+    <button class="popup-telefono-cerrar" (click)="mostrarTelefono = false">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+</div>

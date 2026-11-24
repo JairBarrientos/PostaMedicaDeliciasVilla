@@ -1,0 +1,308 @@
+/* ═══════════════════════════════════════
+   PAGE
+═══════════════════════════════════════ */
+.mis-citas-page {
+  min-height: 100vh;
+  background: #f1f5f9;
+  padding: 36px 24px;
+}
+
+/* ═══════════════════════════════════════
+   HEADER
+═══════════════════════════════════════ */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.page-header h2 { font-size: 24px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 10px; margin: 0 0 4px; }
+.page-header h2 i { color: #1a56db; }
+.page-header p { font-size: 14px; color: #64748b; margin: 0; }
+
+.btn-nueva {
+  padding: 10px 20px;
+  background: #1a56db; color: #fff;
+  border-radius: 10px; font-size: 14px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 7px;
+  text-decoration: none; transition: background 0.2s; white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(26,86,219,0.25);
+}
+.btn-nueva:hover { background: #1447b8; }
+
+/* ═══════════════════════════════════════
+   AVISO
+═══════════════════════════════════════ */
+.aviso-anticipacion {
+  max-width: 860px; margin: 0 auto 18px;
+  background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
+  border-radius: 10px; padding: 10px 16px; font-size: 13px;
+  display: flex; align-items: center; gap: 8px;
+}
+.aviso-anticipacion i { color: #1a56db; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════
+   NOTIFICACIONES
+═══════════════════════════════════════ */
+.notif-exito, .notif-error {
+  max-width: 860px; margin: 0 auto 16px;
+  padding: 12px 18px; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 9px;
+  animation: fadeIn 0.3s ease;
+}
+.notif-exito { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.notif-error  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══════════════════════════════════════
+   TABS
+═══════════════════════════════════════ */
+.tabs-wrapper { max-width: 860px; margin: 0 auto 24px; }
+.tabs { display: flex; gap: 8px; background: #fff; padding: 6px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); width: fit-content; }
+.tabs button {
+  padding: 10px 20px; border: none; background: transparent; border-radius: 8px;
+  font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; transition: all 0.2s; font-family: inherit;
+}
+.tabs button:hover { background: #f1f5f9; color: #0f172a; }
+.tabs button.activo { background: #1a56db; color: #fff; box-shadow: 0 4px 12px rgba(26,86,219,0.3); }
+.tab-badge { background: #fff; color: #1a56db; border-radius: 20px; padding: 1px 8px; font-size: 11px; font-weight: 700; }
+.tab-badge-gris { background: #e2e8f0; color: #64748b; }
+.tabs button.activo .tab-badge,
+.tabs button.activo .tab-badge-gris { background: rgba(255,255,255,0.25); color: #fff; }
+
+/* ═══════════════════════════════════════
+   LOADING
+═══════════════════════════════════════ */
+.loading { text-align: center; padding: 80px 20px; color: #64748b; }
+.loading-spinner i { font-size: 36px; color: #1a56db; margin-bottom: 14px; display: block; }
+
+/* ═══════════════════════════════════════
+   LISTA
+═══════════════════════════════════════ */
+.citas-lista { display: flex; flex-direction: column; gap: 14px; max-width: 860px; margin: 0 auto; }
+
+/* ═══════════════════════════════════════
+   EMPTY
+═══════════════════════════════════════ */
+.empty-state {
+  text-align: center; padding: 80px 20px; color: #64748b;
+  background: #fff; border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.empty-state i { font-size: 52px; color: #cbd5e1; }
+.empty-state p { font-size: 16px; margin: 0; }
+
+/* ═══════════════════════════════════════
+   CARD
+═══════════════════════════════════════ */
+.cita-card {
+  background: #fff;
+  border-radius: 16px;
+  display: flex;
+  align-items: stretch;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid #f1f5f9;
+  transition: box-shadow 0.2s, transform 0.2s;
+  overflow: hidden;
+}
+.cita-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
+
+/* Barra lateral */
+.card-barra { width: 6px; flex-shrink: 0; }
+.barra-por-confirmar { background: #f59e0b; }
+.barra-programada    { background: #1a56db; }
+.barra-atendida      { background: #16a34a; }
+.barra-cancelada     { background: #dc2626; }
+.barra-no-asistida   { background: #ea580c; }
+
+/* Bloque fecha */
+.cita-fecha {
+  min-width: 70px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 16px 12px;
+  background: #eff6ff;
+  flex-shrink: 0;
+}
+.cita-fecha .dia  { font-size: 30px; font-weight: 800; color: #1a56db; line-height: 1; }
+.cita-fecha .mes  { font-size: 12px; font-weight: 700; color: #1a56db; text-transform: uppercase; margin-top: 2px; letter-spacing: .5px; }
+.cita-fecha .anio { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+
+/* Divisor vertical */
+.card-divider {
+  width: 1px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+  margin: 12px 0;
+}
+
+/* Centro */
+.card-centro {
+  flex: 1;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* Fila top: nombre + estado */
+.cita-info-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.especialista-nombre { font-size: 15px; font-weight: 700; color: #0f172a; }
+
+/* Fila mid: especialidad + hora */
+.cita-info-mid {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.dato-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+.dato-pill i { color: #1a56db; font-size: 11px; }
+
+/* Fila bottom: código+QR + avisos */
+.cita-info-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+/* QR + código */
+.codigo-qr-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qr-mini {
+  width: 48px; height: 48px;
+  border-radius: 6px;
+  border: 1.5px solid #e2e8f0;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+
+.codigo-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.codigo-label { font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; }
+.codigo-valor {
+  font-size: 13px; font-weight: 700; color: #1e40af;
+  font-family: 'Courier New', monospace;
+  letter-spacing: .3px;
+}
+
+/* Avisos */
+.avisos-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.estado-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.estado-programada    { background: #dbeafe; color: #1e40af; }
+.estado-cancelada     { background: #fee2e2; color: #991b1b; }
+.estado-atendida      { background: #dcfce7; color: #166534; }
+.estado-no-asistida   { background: #ffedd5; color: #9a3412; }
+.estado-por-confirmar { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+
+.aviso-confirmar {
+  font-size: 11px; color: #92400e; margin: 0;
+  background: #fef9c3; padding: 5px 9px; border-radius: 6px;
+  display: flex; align-items: center; gap: 5px;
+}
+.mensaje-cancelacion {
+  font-size: 11px; color: #991b1b; margin: 0;
+  background: #fee2e2; padding: 6px 10px; border-radius: 6px;
+  display: flex; gap: 6px; align-items: flex-start;
+}
+.btn-cancelar {
+  padding: 6px 14px; background: #fee2e2; color: #dc2626;
+  border: 1px solid #fca5a5; border-radius: 8px;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: background 0.2s; font-family: inherit;
+}
+.btn-cancelar:hover { background: #fecaca; }
+.aviso-vencido {
+  font-size: 11px; color: #64748b; margin: 0;
+  background: #f1f5f9; padding: 5px 9px; border-radius: 6px;
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* ═══════════════════════════════════════
+   MODAL
+═══════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,0.55); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; animation: fadeIn 0.2s ease;
+}
+.modal-box {
+  background: #fff; border-radius: 20px; padding: 36px 32px;
+  max-width: 420px; width: 90%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  text-align: center; animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.modal-icono { width: 64px; height: 64px; border-radius: 50%; background: #fef3c7; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; }
+.modal-icono i { font-size: 28px; color: #d97706; }
+.modal-box h3 { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 16px; }
+.modal-detalle { background: #f8fafc; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; text-align: left; }
+.modal-detalle p { font-size: 13px; color: #334155; margin: 4px 0; display: flex; align-items: center; gap: 8px; }
+.modal-detalle p i { color: #1a56db; width: 14px; }
+.modal-advertencia {
+  font-size: 13px; color: #92400e; background: #fef9c3;
+  border-radius: 8px; padding: 10px 14px;
+  display: flex; align-items: flex-start; gap: 8px;
+  text-align: left; margin-bottom: 24px; line-height: 1.5;
+}
+.modal-acciones { display: flex; gap: 12px; }
+.btn-modal-cancelar, .btn-modal-confirmar {
+  flex: 1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700;
+  cursor: pointer; border: none; transition: all 0.2s; font-family: inherit;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.btn-modal-cancelar { background: #f1f5f9; color: #64748b; }
+.btn-modal-cancelar:hover:not(:disabled) { background: #e2e8f0; }
+.btn-modal-confirmar { background: #dc2626; color: #fff; box-shadow: 0 4px 12px rgba(220,38,38,0.3); }
+.btn-modal-confirmar:hover:not(:disabled) { background: #b91c1c; }
+.btn-modal-cancelar:disabled, .btn-modal-confirmar:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 600px) {
+  .cita-fecha { min-width: 56px; padding: 12px 8px; }
+  .cita-fecha .dia { font-size: 24px; }
+  .card-centro { padding: 12px 14px; }
+  .cita-info-bottom { flex-direction: column; align-items: flex-start; }
+  .avisos-wrap { width: 100%; }
+}

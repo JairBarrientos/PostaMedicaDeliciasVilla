@@ -1,0 +1,191 @@
+<app-header></app-header>
+
+<!-- OVERLAY DE CARGA -->
+<div class="overlay-cargando" *ngIf="cargando">
+  <div class="spinner-box">
+    <div class="spinner"></div>
+    <p>Procesando tu reserva...</p>
+    <span>Por favor espera un momento</span>
+  </div>
+</div>
+
+<main class="nueva-cita-page">
+  <div class="cita-layout">
+
+    <!-- ═══════════════ IZQUIERDA 70% ═══════════════ -->
+    <div class="cita-left">
+
+      <button class="btn-back" routerLink="/dashboard">
+        <i class="fa-solid fa-arrow-left"></i> Volver al inicio
+      </button>
+
+      <h2><i class="fa-solid fa-calendar-plus"></i> Agendar cita</h2>
+
+      <!-- ✅ AVISO DE LÍMITE DE RESERVAS -->
+      <div class="aviso-limite">
+        <i class="fa-solid fa-circle-info"></i>
+        <div>
+          <strong>¿Hasta cuándo puedo reservar?</strong>
+          <p>Solo puedes reservar citas hasta el último día de <strong>{{ mesLimiteTexto }}</strong>. Las reservas fuera de ese rango no están disponibles.</p>
+        </div>
+      </div>
+
+      <!-- LEYENDA -->
+      <div class="leyenda">
+        <span class="ley-item"><span class="dot verde"></span> Disponible</span>
+        <span class="ley-item"><span class="dot rojo"></span> No laboral</span>
+        <span class="ley-item"><span class="dot naranja"></span> Feriado</span>
+        <span class="ley-item"><span class="dot gris"></span> No disponible</span>
+        <span class="ley-item"><span class="dot azul"></span> Seleccionado</span>
+      </div>
+
+      <!-- CALENDARIO -->
+      <div class="calendario">
+        <div class="cal-nav">
+          <button (click)="semanaAnterior()">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <span>{{ labelSemana }}</span>
+          <button (click)="semanaSiguiente()">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <div class="cal-semana">
+          <div *ngFor="let dia of semana"
+               class="cal-dia"
+               [class.domingo]="dia.esDomingo"
+               [class.feriado]="dia.esFeriado"
+               [class.bloqueado]="dia.estaBloqueado"
+               [class.pasado]="dia.esPasado"
+               [class.seleccionado]="dia.fechaStr === fecha"
+               [class.disponible]="!dia.esDomingo && !dia.esFeriado && !dia.estaBloqueado && !dia.esPasado"
+               (click)="seleccionarDia(dia)">
+            <span class="dia-nombre">{{ dia.nombre }}</span>
+            <span class="dia-numero">{{ dia.numero }}</span>
+            <span class="dia-mes">{{ dia.mes }}</span>
+            <span class="dia-estado" *ngIf="dia.esDomingo">No laboral</span>
+            <span class="dia-estado" *ngIf="dia.esFeriado && !dia.esDomingo">{{ dia.feriadoMotivo || 'Feriado' }}</span>
+            <span class="dia-estado" *ngIf="dia.estaBloqueado && !dia.esFeriado && !dia.esDomingo">No disponible</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENSAJE DOMINGO -->
+      <div class="horarios-domingo" *ngIf="esDomingoHoy && !fecha">
+        <i class="fa-solid fa-moon"></i>
+        <p class="domingo-titulo">Hoy no hay atención</p>
+        <p class="domingo-sub">Los domingos no son días laborables. Puedes seleccionar otra fecha disponible en el calendario.</p>
+      </div>
+
+      <!-- HORARIOS -->
+      <div class="horarios" *ngIf="fecha && !esDomingoHoy">
+        <h3><i class="fa-solid fa-clock"></i> Horarios disponibles</h3>
+        <p class="fecha-sel">{{ fechaFormateada }}</p>
+        <div class="horarios-grilla">
+          <button *ngFor="let h of horasDisponibles"
+                  class="slot"
+                  [class.ocupado]="horasOcupadas.includes(h)"
+                  [class.bloqueado-rango]="esCeldaBloqueada(h) && !esHoraPasada(h)"
+                  [class.hora-pasada]="esHoraPasada(h)"
+                  [class.seleccionado]="hora === h"
+                  [disabled]="horasOcupadas.includes(h) || esCeldaBloqueada(h)"
+                  [title]="esCeldaBloqueada(h) ? motivoRango(h) : ''"
+                  (click)="hora = h">
+            {{ h }}
+            <span *ngIf="horasOcupadas.includes(h)" class="slot-tag">Ocupado</span>
+            <span *ngIf="esHoraPasada(h)" class="slot-tag">Pasada</span>
+            <span *ngIf="esCeldaBloqueada(h) && !horasOcupadas.includes(h) && !esHoraPasada(h)" class="slot-tag blq">
+              <i class="fa-solid fa-lock"></i> {{ motivoRango(h) || 'Bloqueado' }}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- PLACEHOLDER -->
+      <div class="horarios-placeholder" *ngIf="!fecha && !esDomingoHoy">
+        <i class="fa-solid fa-hand-pointer"></i>
+        <p>Selecciona un día disponible para ver los horarios</p>
+      </div>
+
+      <!-- BOTÓN CONFIRMAR -->
+      <button class="btn-confirmar" (click)="confirmar()" [disabled]="cargando || !fecha || !hora || esDomingoHoy">
+        <i class="fa-solid fa-calendar-check"></i>
+        {{ cargando ? 'Agendando...' : 'Confirmar cita' }}
+      </button>
+
+      <div class="msg-notif" *ngIf="mensaje"
+           [class.exito]="tipoMensaje === 'exito'"
+           [class.error]="tipoMensaje === 'error'">
+        <i class="fa-solid" [class.fa-circle-check]="tipoMensaje === 'exito'" [class.fa-circle-xmark]="tipoMensaje === 'error'"></i>
+        {{ mensaje }}
+      </div>
+
+    </div>
+
+    <!-- ═══════════════ DERECHA 30% — CV ESPECIALISTA ═══════════════ -->
+    <div class="cita-right" *ngIf="especialista">
+      <div class="cv-avatar">
+        <img *ngIf="especialista.foto" [src]="fotoUrl(especialista.foto)" [alt]="especialista.nombreCompleto">
+        <div *ngIf="!especialista.foto" class="cv-avatar-placeholder">
+          <i class="fa-solid fa-user-doctor"></i>
+        </div>
+      </div>
+
+      <h3 class="cv-nombre">{{ especialista.nombreCompleto }}</h3>
+      <span class="cv-especialidad">
+        <i class="fa-solid fa-stethoscope"></i>
+        {{ especialista.especialidad }}
+      </span>
+
+      <div class="cv-divider"></div>
+
+      <div class="cv-section">
+        <h4><i class="fa-solid fa-address-card"></i> Información</h4>
+        <div class="cv-item" *ngIf="especialista.correo">
+          <i class="fa-solid fa-envelope"></i>
+          <span>{{ especialista.correo }}</span>
+        </div>
+        <div class="cv-item" *ngIf="especialista.telefono">
+          <i class="fa-solid fa-phone"></i>
+          <span>{{ especialista.telefono }}</span>
+        </div>
+        <div class="cv-item" *ngIf="especialista.dni">
+          <i class="fa-solid fa-id-card"></i>
+          <span>DNI: {{ especialista.dni }}</span>
+        </div>
+      </div>
+
+      <div class="cv-divider"></div>
+
+      <div class="cv-section">
+        <h4><i class="fa-solid fa-calendar-week"></i> Horario de atención</h4>
+        <div class="cv-horario-item">
+          <span class="cv-dia">Lun — Sáb</span>
+          <span class="cv-horas">07:00 — 16:00</span>
+        </div>
+        <div class="cv-horario-item cv-cerrado">
+          <span class="cv-dia">Domingo</span>
+          <span class="cv-horas">No laboral</span>
+        </div>
+      </div>
+
+      <div class="cv-divider"></div>
+
+      <div class="cv-estado">
+        <span class="cv-badge-activo" *ngIf="especialista.estado === 'ACTIVO'">
+          <i class="fa-solid fa-circle"></i> Disponible para atención
+        </span>
+        <span class="cv-badge-inactivo" *ngIf="especialista.estado !== 'ACTIVO'">
+          <i class="fa-solid fa-circle"></i> No disponible
+        </span>
+      </div>
+
+      <div class="cv-nota">
+        <i class="fa-solid fa-circle-info"></i>
+        Las citas quedan pendientes de confirmación por el especialista.
+      </div>
+    </div>
+
+  </div>
+</main>
