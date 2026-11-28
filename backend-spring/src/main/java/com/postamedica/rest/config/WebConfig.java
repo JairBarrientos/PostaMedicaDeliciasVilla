@@ -1,3 +1,4 @@
+
 package com.postamedica.rest.config;
 
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +12,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:4200")
+                .allowedOrigins(
+                    "http://localhost:4200",
+                    "https://postamedica-frontend-g2wf49ged-jair-alexis.vercel.app"
+                )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .maxAge(3600);
