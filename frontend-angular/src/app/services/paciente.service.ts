@@ -6,7 +6,7 @@ import { Paciente } from '../model/paciente';
 @Injectable({ providedIn: 'root' })
 export class PacienteService {
 
-  private apiUrl = 'http://localhost:8080/api/usuarios';
+  private apiUrl = 'https://postamedica-backend.onrender.com/api/usuarios';
 
   constructor(private http: HttpClient) {}
 

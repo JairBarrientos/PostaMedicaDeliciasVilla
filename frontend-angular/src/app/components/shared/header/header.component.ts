@@ -52,7 +52,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   cargarNoLeidos() {
     if (!this.usuario?.id) return;
-    fetch(`http://localhost:8080/api/chat/no-leidos/${this.usuario.id}`)
+    fetch(`https://postamedica-backend.onrender.com/api/chat/no-leidos/${this.usuario.id}`)
       .then(r => r.json())
       .then(n => this.mensajesNoLeidos = n)
       .catch(() => this.mensajesNoLeidos = 0);

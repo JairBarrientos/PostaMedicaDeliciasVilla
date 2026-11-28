@@ -11,7 +11,7 @@ export interface GaleriaPortada {
 @Injectable({ providedIn: 'root' })
 export class GaleriaPortadaService {
 
-  private api = 'http://localhost:8080/api/galeria-portada';
+  private api = 'https://postamedica-backend.onrender.com/api/galeria-portada';
 
   constructor(private http: HttpClient) {}
 
@@ -31,6 +31,6 @@ export class GaleriaPortadaService {
   }
 
   fotoUrl(ruta: string): string {
-    return `http://localhost:8080${ruta}`;
+    return `https://postamedica-backend.onrender.com${ruta}`;
   }
 }

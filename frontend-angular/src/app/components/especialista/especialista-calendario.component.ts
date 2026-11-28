@@ -64,9 +64,9 @@ export class EspecialistaCalendarioComponent implements OnInit {
   horasLabel: string[] = [];
   nombreDias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
-  private api = 'http://localhost:8080/api/calendario';
-  private apiCitas = 'http://localhost:8080/api/citas';
-  private apiUsuarios = 'http://localhost:8080/api/usuarios';
+  private api = 'https://postamedica-backend.onrender.com/api/calendario';
+  private apiCitas = 'https://postamedica-backend.onrender.com/api/citas';
+  private apiUsuarios = 'https://postamedica-backend.onrender.com/api/usuarios';
 
   constructor(private http: HttpClient) {
     this.horasLabel = this.horas.map(h => {

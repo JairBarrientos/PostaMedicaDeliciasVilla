@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class ChatService {
 
-  private base = 'http://localhost:8080/api/chat';
+  private base = 'https://postamedica-backend.onrender.com/api/chat';
 
   constructor(private http: HttpClient) {}
 

@@ -141,7 +141,7 @@ export class AdminComponent implements OnInit {
 
   descargarReporteGeneral() {
     this.usuarioService.listarTodos().subscribe(usuarios => {
-      fetch('http://localhost:8080/api/citas')
+      fetch('https://postamedica-backend.onrender.com/api/citas')
         .then(r => r.json())
         .then(citas => this.reporteService.exportarReporteGeneral(usuarios, citas));
     });
@@ -355,7 +355,7 @@ export class AdminComponent implements OnInit {
   // ── Utilidades ────────────────────────────────────────────────────────────
 
   fotoUrl(foto?: string): string {
-    return foto ? `http://localhost:8080${foto}` : '';
+    return foto ? `https://postamedica-backend.onrender.com${foto}` : '';
   }
 
   mostrarExito(msg: string) {

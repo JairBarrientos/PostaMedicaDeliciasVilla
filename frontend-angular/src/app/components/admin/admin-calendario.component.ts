@@ -70,8 +70,8 @@ export class AdminCalendarioComponent implements OnInit {
   horasLabel: string[] = [];
   nombreDias = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
-  private api     = 'http://localhost:8080/api/calendario';
-  private apiCitas = 'http://localhost:8080/api/citas';
+  private api     = 'https://postamedica-backend.onrender.com/api/calendario';
+  private apiCitas = 'https://postamedica-backend.onrender.com/api/citas';
 
   constructor(
     private especialistaService: EspecialistaService,

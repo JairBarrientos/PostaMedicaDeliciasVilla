@@ -67,7 +67,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
 
     // Cargar sabías que desde BD
-    this.http.get<any[]>('http://localhost:8080/api/sabias-que').subscribe({
+    this.http.get<any[]>('https://postamedica-backend.onrender.com/api/sabias-que').subscribe({
       next: (data) => {
         this.sabiasQue = data.map(d => d.contenido);
         if (this.sabiasQue.length > 0) {
@@ -117,7 +117,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   fotoUrl(foto?: string): string {
-    return foto ? `http://localhost:8080${foto}` : '';
+    return foto ? `https://postamedica-backend.onrender.com${foto}` : '';
   }
 
   irAgendar(especialistaId: number) {

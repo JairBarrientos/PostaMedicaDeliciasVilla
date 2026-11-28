@@ -133,7 +133,7 @@ export class NuevaCitaComponent implements OnInit {
     const inicio = this.toDateStr(this.lunesActual);
     const fin = new Date(this.lunesActual); fin.setDate(fin.getDate() + 6);
     const finStr = this.toDateStr(fin);
-    this.http.get<any>(`http://localhost:8080/api/calendario/disponibilidad`, {
+    this.http.get<any>(`https://postamedica-backend.onrender.com/api/calendario/disponibilidad`, {
       params: { especialistaId: String(this.especialista!.id), inicio, fin: finStr }
     }).subscribe({
       next: (data) => {
@@ -242,7 +242,7 @@ export class NuevaCitaComponent implements OnInit {
   }
 
   fotoUrl(foto?: string): string {
-    return foto ? `http://localhost:8080${foto}` : '';
+    return foto ? `https://postamedica-backend.onrender.com${foto}` : '';
   }
 
   confirmar() {

@@ -10,7 +10,7 @@ export interface SabiasQueItem {
 @Injectable({ providedIn: 'root' })
 export class SabiasQueService {
 
-  private api = 'http://localhost:8080/api/sabias-que';
+  private api = 'https://postamedica-backend.onrender.com/api/sabias-que';
   private _datos$ = new BehaviorSubject<string[]>([]);
   datos$ = this._datos$.asObservable();
 
