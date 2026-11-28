@@ -9,3 +9,8 @@ frontend-angular/dist/
 # Mac y VS Code
 .DS_Store
 .vscode/
+
+# Configuraciones locales y secretos
+**/application-local.properties
+**/.env
+**/.env.*
