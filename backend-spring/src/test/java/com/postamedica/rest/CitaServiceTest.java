@@ -1,7 +1,8 @@
+
 package com.postamedica.rest;
 
+import com.postamedica.rest.application.events.NotificacionCitaEvent;
 import com.postamedica.rest.application.services.CitaService;
-import com.postamedica.rest.application.services.NotificacionService;
 import com.postamedica.rest.domain.dtos.CancelarCitaRequest;
 import com.postamedica.rest.domain.dtos.CrearCitaRequest;
 import com.postamedica.rest.domain.model.CitaMedica;
@@ -9,12 +10,14 @@ import com.postamedica.rest.domain.model.Especialista;
 import com.postamedica.rest.domain.repository.CitaMedicaRepository;
 import com.postamedica.rest.domain.repository.EspecialistaRepository;
 import com.postamedica.rest.domain.repository.UsuarioRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,7 +27,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,7 +43,7 @@ class CitaServiceTest {
     private EspecialistaRepository especialistaRepository;
 
     @Mock
-    private NotificacionService notificacionService;
+    private ApplicationEventPublisher eventPublisher;
 
     private CitaService citaService;
 
@@ -49,7 +52,12 @@ class CitaServiceTest {
 
     @BeforeEach
     void setUp() {
-        citaService = new CitaService(citaMedicaRepository, usuarioRepository, especialistaRepository, notificacionService);
+        citaService = new CitaService(
+                citaMedicaRepository,
+                usuarioRepository,
+                especialistaRepository,
+                eventPublisher
+        );
 
         requestValido = new CrearCitaRequest();
         requestValido.setPacienteId(1L);
@@ -80,14 +88,16 @@ class CitaServiceTest {
         guardada.setHora(requestValido.getHora());
         guardada.setPacienteId(1L);
         guardada.setEspecialistaId(10L);
+
         when(citaMedicaRepository.save(any(CitaMedica.class))).thenReturn(guardada);
 
         CitaMedica resultado = citaService.agendar(requestValido);
 
         assertNotNull(resultado);
         assertEquals("POR_CONFIRMAR", resultado.getEstado());
+
         verify(citaMedicaRepository).save(any(CitaMedica.class));
-        verify(notificacionService).enviar(eq(1L), eq(10L), anyString());
+        verify(eventPublisher).publishEvent(any(NotificacionCitaEvent.class));
     }
 
     @Test
@@ -95,11 +105,14 @@ class CitaServiceTest {
     void agendar_pacienteNoExiste_lanzaExcepcion() {
         when(usuarioRepository.existsById(1L)).thenReturn(false);
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> citaService.agendar(requestValido));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> citaService.agendar(requestValido)
+        );
 
         assertEquals("Paciente no encontrado", ex.getMessage());
         verify(citaMedicaRepository, never()).save(any());
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -108,8 +121,10 @@ class CitaServiceTest {
         when(usuarioRepository.existsById(1L)).thenReturn(true);
         when(especialistaRepository.existsById(10L)).thenReturn(false);
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> citaService.agendar(requestValido));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> citaService.agendar(requestValido)
+        );
 
         assertEquals("Especialista no encontrado", ex.getMessage());
     }
@@ -118,15 +133,20 @@ class CitaServiceTest {
     @DisplayName("Agendar falla si la fecha es anterior a hoy")
     void agendar_fechaPasada_lanzaExcepcion() {
         requestValido.setFecha(LocalDate.now().minusDays(1));
+
         when(usuarioRepository.existsById(1L)).thenReturn(true);
         when(especialistaRepository.existsById(10L)).thenReturn(true);
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> citaService.agendar(requestValido));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> citaService.agendar(requestValido)
+        );
 
-        assertEquals("No se pueden agendar citas en fechas pasadas", ex.getMessage());
+        assertEquals(
+                "No se pueden agendar citas en fechas pasadas",
+                ex.getMessage()
+        );
     }
-
 
     @Test
     @DisplayName("Agendar genera un código de cita con formato correcto")
@@ -136,7 +156,8 @@ class CitaServiceTest {
         when(citaMedicaRepository.findByPacienteId(1L)).thenReturn(List.of());
         when(especialistaRepository.findById(10L)).thenReturn(Optional.of(especialista));
         when(citaMedicaRepository.existeConflicto(eq(10L), any(), any())).thenReturn(false);
-        when(citaMedicaRepository.save(any(CitaMedica.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(citaMedicaRepository.save(any(CitaMedica.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         CitaMedica resultado = citaService.agendar(requestValido);
 
@@ -144,7 +165,6 @@ class CitaServiceTest {
         assertTrue(resultado.getCodigoCita().startsWith("CM-"));
         assertTrue(resultado.getCodigoCita().endsWith("-10"));
     }
-
 
     @Test
     @DisplayName("Agendar falla si el especialista ya tiene una cita a esa hora")
@@ -155,10 +175,16 @@ class CitaServiceTest {
         when(especialistaRepository.findById(10L)).thenReturn(Optional.of(especialista));
         when(citaMedicaRepository.existeConflicto(eq(10L), any(), any())).thenReturn(true);
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> citaService.agendar(requestValido));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> citaService.agendar(requestValido)
+        );
 
-        assertEquals("El especialista ya tiene una cita a esa hora", ex.getMessage());
+        assertEquals(
+                "El especialista ya tiene una cita a esa hora",
+                ex.getMessage()
+        );
+
         verify(citaMedicaRepository, never()).save(any());
     }
 
@@ -169,20 +195,29 @@ class CitaServiceTest {
         when(especialistaRepository.existsById(10L)).thenReturn(true);
 
         List<CitaMedica> citasDelMes = new java.util.ArrayList<>();
+
         for (int i = 0; i < 8; i++) {
             CitaMedica c = new CitaMedica();
             c.setEstado("PROGRAMADA");
-            c.setFecha(requestValido.getFecha().withDayOfMonth(1).plusDays(i));
+            c.setFecha(
+                    requestValido.getFecha().withDayOfMonth(1).plusDays(i)
+            );
             citasDelMes.add(c);
         }
-        when(citaMedicaRepository.findByPacienteId(1L)).thenReturn(citasDelMes);
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> citaService.agendar(requestValido));
+        when(citaMedicaRepository.findByPacienteId(1L))
+                .thenReturn(citasDelMes);
 
-        assertEquals("Has alcanzado el límite de 8 citas para este mes.", ex.getMessage());
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> citaService.agendar(requestValido)
+        );
+
+        assertEquals(
+                "Has alcanzado el límite de 8 citas para este mes.",
+                ex.getMessage()
+        );
     }
-
 
     @Test
     @DisplayName("Cancelar cita exitosamente con más de 24 horas de anticipación")
@@ -204,8 +239,12 @@ class CitaServiceTest {
         CitaMedica resultado = citaService.cancelar(100L, request);
 
         assertEquals("CANCELADA", resultado.getEstado());
-        assertEquals("El paciente ya no puede asistir", resultado.getMensajeCancelacion());
-        verify(notificacionService).enviar(eq(1L), eq(10L), anyString());
+        assertEquals(
+                "El paciente ya no puede asistir",
+                resultado.getMensajeCancelacion()
+        );
+
+        verify(eventPublisher).publishEvent(any(NotificacionCitaEvent.class));
     }
 
     @Test
@@ -214,9 +253,9 @@ class CitaServiceTest {
         CitaMedica cita = new CitaMedica();
         cita.setId(100L);
         cita.setEstado("PROGRAMADA");
-        // La cita es mañana a esta misma hora -> menos de 24h si ya pasó parte del día,
-        // forzamos exactamente 5 horas en el futuro para garantizar < 24h
+
         LocalDateTime enCincoHoras = LocalDateTime.now().plusHours(5);
+
         cita.setFecha(enCincoHoras.toLocalDate());
         cita.setHora(enCincoHoras.toLocalTime());
 
@@ -225,10 +264,16 @@ class CitaServiceTest {
 
         when(citaMedicaRepository.findById(100L)).thenReturn(Optional.of(cita));
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> citaService.cancelar(100L, request));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> citaService.cancelar(100L, request)
+        );
 
-        assertEquals("Solo se puede cancelar con al menos 24 horas de anticipación", ex.getMessage());
+        assertEquals(
+                "Solo se puede cancelar con al menos 24 horas de anticipación",
+                ex.getMessage()
+        );
+
         verify(citaMedicaRepository, never()).save(any());
     }
 
@@ -246,8 +291,10 @@ class CitaServiceTest {
 
         when(citaMedicaRepository.findById(100L)).thenReturn(Optional.of(cita));
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> citaService.cancelar(100L, request));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> citaService.cancelar(100L, request)
+        );
 
         assertEquals("Solo se pueden cancelar citas activas", ex.getMessage());
     }
@@ -260,12 +307,13 @@ class CitaServiceTest {
 
         when(citaMedicaRepository.findById(999L)).thenReturn(Optional.empty());
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> citaService.cancelar(999L, request));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> citaService.cancelar(999L, request)
+        );
 
         assertEquals("Cita no encontrada", ex.getMessage());
     }
-
 
     @Test
     @DisplayName("Listar por paciente retorna el historial de citas")
@@ -296,7 +344,6 @@ class CitaServiceTest {
         assertTrue(resultado.isEmpty());
     }
 
-
     @Test
     @DisplayName("Listar por especialista retorna sus citas programadas")
     void listarPorEspecialista_retornaCitas() {
@@ -316,7 +363,6 @@ class CitaServiceTest {
         assertEquals("PROGRAMADA", resultado.get(0).getEstado());
     }
 
-
     @Test
     @DisplayName("Aceptar cita cambia el estado a PROGRAMADA")
     void aceptar_exitoso() {
@@ -335,7 +381,8 @@ class CitaServiceTest {
         CitaMedica resultado = citaService.aceptar(100L);
 
         assertEquals("PROGRAMADA", resultado.getEstado());
-        verify(notificacionService).enviar(eq(1L), eq(10L), anyString());
+
+        verify(eventPublisher).publishEvent(any(NotificacionCitaEvent.class));
     }
 
     @Test
@@ -347,9 +394,14 @@ class CitaServiceTest {
 
         when(citaMedicaRepository.findById(100L)).thenReturn(Optional.of(cita));
 
-        RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> citaService.aceptar(100L));
+        RuntimeException ex = assertThrows(
+                RuntimeException.class,
+                () -> citaService.aceptar(100L)
+        );
 
-        assertEquals("Solo se pueden aceptar citas en estado POR_CONFIRMAR", ex.getMessage());
+        assertEquals(
+                "Solo se pueden aceptar citas en estado POR_CONFIRMAR",
+                ex.getMessage()
+        );
     }
 }
