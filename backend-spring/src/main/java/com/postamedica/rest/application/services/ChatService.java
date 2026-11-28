@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +59,16 @@ public class ChatService {
     @Transactional(readOnly = true)
     public List<Long> especialistasConNoLeidos(Long pacienteId) {
         return mensajeChatRepository.findEspecialistasConNoLeidos(pacienteId);
+    }
+
+    // ===== ESPECIALISTA =====
+    @Transactional(readOnly = true)
+    public Map<Long, Long> noLeidosPorPaciente(Long especialistaId) {
+        return mensajeChatRepository.contarNoLeidosPorPaciente(especialistaId);
+    }
+
+    public void marcarComoLeidosPorEspecialista(Long pacienteId, Long especialistaId) {
+        mensajeChatRepository.marcarComoLeidosPorEspecialista(pacienteId, especialistaId);
     }
 
     @Transactional(readOnly = true)

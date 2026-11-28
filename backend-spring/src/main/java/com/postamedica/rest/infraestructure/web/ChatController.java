@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -56,6 +57,21 @@ public class ChatController {
     @GetMapping("/especialistas-con-noLeidos/{pacienteId}")
     public ResponseEntity<List<Long>> especialistasConNoLeidos(@PathVariable Long pacienteId) {
         return ResponseEntity.ok(chatService.especialistasConNoLeidos(pacienteId));
+    }
+
+    // ===== ESPECIALISTA: no leídos por paciente. Respuesta: { "pacienteId": cantidad } =====
+    @GetMapping("/no-leidos-especialista/{especialistaId}")
+    public ResponseEntity<Map<Long, Long>> noLeidosEspecialista(@PathVariable Long especialistaId) {
+        return ResponseEntity.ok(chatService.noLeidosPorPaciente(especialistaId));
+    }
+
+    // ===== ESPECIALISTA: marcar como leídos los mensajes de un paciente =====
+    @PutMapping("/marcar-leidos-especialista")
+    public ResponseEntity<Void> marcarLeidosEspecialista(
+            @RequestParam Long pacienteId,
+            @RequestParam Long especialistaId) {
+        chatService.marcarComoLeidosPorEspecialista(pacienteId, especialistaId);
+        return ResponseEntity.ok().build();
     }
 
     // ✅ NUEVO: verificar si el chat está habilitado entre paciente y especialista

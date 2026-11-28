@@ -20,8 +20,9 @@
     <button [class.activo]="tab === 'calendario-semana'" (click)="tab = 'calendario-semana'">
       <i class="fa-solid fa-calendar-week"></i> Calendario semanal
     </button>
-    <button [class.activo]="tab === 'chat'" (click)="tab = 'chat'">
+    <button [class.activo]="tab === 'chat'" (click)="abrirChat()">
       <i class="fa-solid fa-comments"></i> Mensajes
+      <span class="badge-mensajes" *ngIf="totalNoLeidos > 0">{{ totalNoLeidos }}</span>
     </button>
   </div>
 
@@ -148,9 +149,11 @@
       <div class="paciente-item"
            *ngFor="let p of pacientesConCita"
            [class.seleccionado]="pacienteSeleccionado?.id === p.id"
+           [class.tiene-noLeidos]="getNoLeidos(p.id) > 0"
            (click)="seleccionarPaciente(p)">
         <i class="fa-solid fa-user-circle"></i>
         {{ p.nombreCompleto }}
+        <span class="badge-paciente" *ngIf="getNoLeidos(p.id) > 0">{{ getNoLeidos(p.id) }}</span>
       </div>
       <p class="empty-chat" *ngIf="pacientesConCita.length === 0">Sin pacientes con cita</p>
     </div>

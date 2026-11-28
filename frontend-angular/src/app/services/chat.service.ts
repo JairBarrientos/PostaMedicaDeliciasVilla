@@ -35,4 +35,16 @@ export class ChatService {
   chatHabilitado(pacienteId: number, especialistaId: number): Observable<boolean> {
     return this.http.get<boolean>(`${this.base}/habilitado?pacienteId=${pacienteId}&especialistaId=${especialistaId}`);
   }
+
+  // ===== ESPECIALISTA =====
+  // Devuelve { "pacienteId": cantidadNoLeidos }
+  noLeidosPorPaciente(especialistaId: number): Observable<Record<string, number>> {
+    return this.http.get<Record<string, number>>(`${this.base}/no-leidos-especialista/${especialistaId}`);
+  }
+
+  marcarComoLeidosEspecialista(pacienteId: number, especialistaId: number): Observable<void> {
+    return this.http.put<void>(
+      `${this.base}/marcar-leidos-especialista?pacienteId=${pacienteId}&especialistaId=${especialistaId}`, {}
+    );
+  }
 }

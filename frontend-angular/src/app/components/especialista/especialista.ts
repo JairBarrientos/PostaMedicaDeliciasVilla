@@ -35,6 +35,11 @@ export class EspecialistaComponent implements OnInit, OnDestroy {
   nuevoMensaje = '';
   private chatInterval: any;
 
+  // No leídos (mensajes que escribieron los pacientes)
+  noLeidosPorPaciente: Map<number, number> = new Map();
+  totalNoLeidos = 0;
+  private noLeidosInterval: any;
+
   // Ticker: actualiza "ahora" cada 30 seg para refrescar botones en tiempo real
   private tickInterval: any;
   ahora: Date = new Date();
@@ -50,6 +55,8 @@ export class EspecialistaComponent implements OnInit, OnDestroy {
     this.especialista = JSON.parse(localStorage.getItem('especialista_logueado') || '{}');
     this.cargarCitas();
     this.cargarPacientes();
+    this.cargarNoLeidos();
+    this.noLeidosInterval = setInterval(() => this.cargarNoLeidos(), 5000);
     this.tickInterval = setInterval(() => { this.ahora = new Date(); }, 30000);
   }
 
@@ -159,9 +166,50 @@ export class EspecialistaComponent implements OnInit, OnDestroy {
     return ids.map(id => this.pacientes.get(id)).filter(Boolean);
   }
 
+  // ─── NO LEÍDOS ────────────────────────────────────────────
+  cargarNoLeidos() {
+    if (!this.especialista?.id) return;
+    this.chatService.noLeidosPorPaciente(this.especialista.id).subscribe({
+      next: (data) => {
+        const mapa = new Map<number, number>();
+        Object.entries(data || {}).forEach(([id, cant]) => mapa.set(Number(id), Number(cant)));
+
+        // Si estoy viendo el chat de ese paciente, no cuenta como pendiente
+        if (this.tab === 'chat' && this.pacienteSeleccionado) {
+          mapa.delete(this.pacienteSeleccionado.id);
+        }
+
+        this.noLeidosPorPaciente = mapa;
+        this.totalNoLeidos = [...mapa.values()].reduce((a, b) => a + b, 0);
+      },
+      error: () => {}
+    });
+  }
+
+  getNoLeidos(pacienteId: number): number {
+    return this.noLeidosPorPaciente.get(pacienteId) ?? 0;
+  }
+
+  private marcarLeidosPacienteActual() {
+    if (!this.pacienteSeleccionado) return;
+    const id = this.pacienteSeleccionado.id;
+    this.chatService.marcarComoLeidosEspecialista(id, this.especialista.id).subscribe(() => {
+      this.noLeidosPorPaciente.delete(id);
+      this.totalNoLeidos = [...this.noLeidosPorPaciente.values()].reduce((a, b) => a + b, 0);
+    });
+  }
+
+  abrirChat() {
+    this.tab = 'chat';
+    if (this.pacienteSeleccionado) {
+      this.cargarMensajes();
+    }
+  }
+
   seleccionarPaciente(p: any) {
     this.pacienteSeleccionado = p;
     this.cargarMensajes();
+    this.marcarLeidosPacienteActual();
     clearInterval(this.chatInterval);
     this.chatInterval = setInterval(() => this.cargarMensajes(), 4000);
   }
@@ -169,7 +217,14 @@ export class EspecialistaComponent implements OnInit, OnDestroy {
   cargarMensajes() {
     if (!this.pacienteSeleccionado) return;
     this.chatService.obtenerConversacion(this.pacienteSeleccionado.id, this.especialista.id)
-      .subscribe((msgs: any[]) => this.mensajes = msgs);
+      .subscribe((msgs: any[]) => {
+        this.mensajes = msgs;
+        // Solo marcar como leído si el especialista realmente está viendo el chat
+        const hayPendientes = msgs.some(m => m.remitenteRol === 'PACIENTE' && !m.leido);
+        if (this.tab === 'chat' && hayPendientes) {
+          this.marcarLeidosPacienteActual();
+        }
+      });
   }
 
   enviarMensaje() {
@@ -185,6 +240,7 @@ export class EspecialistaComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     clearInterval(this.chatInterval);
     clearInterval(this.tickInterval);
+    clearInterval(this.noLeidosInterval);
   }
 
   logout() { localStorage.clear(); this.router.navigate(['/auth']); }

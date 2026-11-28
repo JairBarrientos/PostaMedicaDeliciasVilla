@@ -53,4 +53,29 @@ public interface SpringDataMensajeChatRepository extends JpaRepository<MensajeCh
           AND m.leido = false
     """)
     List<Long> findEspecialistasConNoLeidos(@Param("pacienteId") Long pacienteId);
+
+    // ===== ESPECIALISTA: mensajes que le escribieron los pacientes y no ha leído =====
+    // Devuelve filas [pacienteId, cantidad]
+    @Query("""
+        SELECT m.pacienteId, COUNT(m) FROM MensajeChatEntity m
+        WHERE m.especialistaId = :especialistaId
+          AND m.remitenteRol = 'PACIENTE'
+          AND m.leido = false
+        GROUP BY m.pacienteId
+    """)
+    List<Object[]> contarNoLeidosPorPaciente(@Param("especialistaId") Long especialistaId);
+
+    @Modifying
+    @Query("""
+        UPDATE MensajeChatEntity m
+        SET m.leido = true
+        WHERE m.pacienteId = :pacienteId
+          AND m.especialistaId = :especialistaId
+          AND m.remitenteRol = 'PACIENTE'
+          AND m.leido = false
+    """)
+    void marcarComoLeidosPorEspecialista(
+            @Param("pacienteId") Long pacienteId,
+            @Param("especialistaId") Long especialistaId
+    );
 }

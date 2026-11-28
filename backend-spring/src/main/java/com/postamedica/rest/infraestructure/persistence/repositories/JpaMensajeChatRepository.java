@@ -6,7 +6,9 @@ import com.postamedica.rest.infraestructure.persistence.entities.MensajeChatEnti
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -50,5 +52,19 @@ public class JpaMensajeChatRepository implements MensajeChatRepository {
     @Override
     public List<Long> findEspecialistasConNoLeidos(Long pacienteId) {
         return springDataRepo.findEspecialistasConNoLeidos(pacienteId);
+    }
+
+    @Override
+    public Map<Long, Long> contarNoLeidosPorPaciente(Long especialistaId) {
+        Map<Long, Long> resultado = new HashMap<>();
+        for (Object[] fila : springDataRepo.contarNoLeidosPorPaciente(especialistaId)) {
+            resultado.put(((Number) fila[0]).longValue(), ((Number) fila[1]).longValue());
+        }
+        return resultado;
+    }
+
+    @Override
+    public void marcarComoLeidosPorEspecialista(Long pacienteId, Long especialistaId) {
+        springDataRepo.marcarComoLeidosPorEspecialista(pacienteId, especialistaId);
     }
 }

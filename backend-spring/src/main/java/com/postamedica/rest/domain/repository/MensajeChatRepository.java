@@ -2,6 +2,7 @@ package com.postamedica.rest.domain.repository;
 
 import com.postamedica.rest.domain.model.MensajeChat;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface MensajeChatRepository {
@@ -11,4 +12,8 @@ public interface MensajeChatRepository {
     List<MensajeChat> findNoLeidosByPaciente(Long pacienteId);
     void marcarComoLeidos(Long pacienteId, Long especialistaId);
     List<Long> findEspecialistasConNoLeidos(Long pacienteId);
+
+    // Especialista: cantidad de mensajes no leídos por paciente (pacienteId -> cantidad)
+    Map<Long, Long> contarNoLeidosPorPaciente(Long especialistaId);
+    void marcarComoLeidosPorEspecialista(Long pacienteId, Long especialistaId);
 }
